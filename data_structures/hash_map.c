@@ -1,4 +1,5 @@
-#include "malloc.h"
+#include <assert.h>
+#include <malloc.h>
 #include "hash_map.h"
 
 static const float DEFAULT_LOAD_FACTOR = 0.75;
@@ -17,14 +18,29 @@ typedef struct bucket
 } Bucket;
 
 
+Entry* bucketEntryCreate()
+{
+	Entry* entry = malloc(sizeof(*entry));
+	if (entry)
+	{
+		entry->key = NULL;
+		entry->value = NULL;
+		entry->next = NULL;
+	}
+	return entry;
+}
+
 Bucket* bucketCreate()
 {
 	Bucket* bucket = malloc(sizeof(*bucket));
 	if (bucket)
 	{
-		bucket->key = NULL;
-		bucket->value = NULL;
-		bucket->next = NULL;
+		bucket->dummy = bucketEntryCreate();
+		if (!bucket->dummy)
+		{
+			free(bucket);
+			return NULL;
+		}
 	}
 	return bucket;
 }
@@ -37,8 +53,8 @@ void bucketDestroy(Bucket* bucket, HashMapEntryHandlers handlers)
 	Entry* itr = bucket->dummy->next;
 	while (itr)
 	{
-		handlers->key_free(itr->key);
-		handlers->value_free(itr->value);
+		handlers.key_free(itr->key);
+		handlers.value_free(itr->value);
 		Entry* temp = itr;
 		itr = itr->next;
 		free(temp);
@@ -51,17 +67,17 @@ struct hash_map
 	Bucket** buckets;
 	size_t num_buckets;
        	size_t num_elements;	
-	float load_size;
+	float load_factor;
 	HashMapEntryHandlers handlers;
 	key_hash_func_t key_hash_func;
 	key_cmp_func_t key_cmp_func;
 };
 
 
-Buckets** createBuckets(size_t size)
+Bucket** createBuckets(size_t size)
 {
-	size_t total_size = size * sizeof(Bucket*)
-	Buckets** buckets = calloc(1, total_size);
+	size_t total_size = size * sizeof(Bucket*);
+	Bucket** buckets = calloc(1, total_size);
 	if (buckets)
 	{
 
@@ -89,17 +105,22 @@ HashMap* hashMapInit(key_hash_func_t key_hash_func,
 	if (map)
 	{
 		const size_t default_num_buckets = 32; 
-		map->buckets_num = default_buckets_num;
+		map->num_buckets = default_num_buckets;
 		map->num_elements = 0;
-		map->load_size = 0;
+		map->load_factor = 0;
 		map->key_hash_func = key_hash_func;
-		map->key_cmp_func = key_copy_func;
+		map->key_cmp_func = key_cmp_func;
 		map->handlers = handlers;
 		
-		if (HASH_MAP_SUCCESS != createBuckets(map))
+		Bucket** buckets = createBuckets(map->num_buckets);
+		if (buckets)
+		{
+			map->buckets = buckets;
+		}
+		else
 		{
 			hashMapDestroy(map);
-			return NULL;
+			map = NULL;
 		}
 	}
 
@@ -111,7 +132,7 @@ void hashMapDestroy(HashMap* map)
 {
 	if (!map) return;
 	
-	for (size_t i = 0; i < map->buckets_num; ++i)
+	for (size_t i = 0; i < map->num_buckets; ++i)
 	{
 		bucketDestroy(map->buckets[i], map->handlers);
 	}
@@ -159,7 +180,7 @@ static HashMapErrorCode resizeHashMap(HashMap* map)
 	}
 
 	Bucket** old_buckets = map->buckets;
-	size_t old_num_bucket = map->num_buckets;
+	size_t old_num_buckets = map->num_buckets;
 	
 	// reset statistics in the original hash table
 	map->num_buckets = new_size;
@@ -176,7 +197,7 @@ static HashMapErrorCode resizeHashMap(HashMap* map)
 		{
 			Entry* next = itr->next;
 			itr->next = NULL;
-			size_t hash = map->key_hash_func(itr->key);
+			size_t hash = map->key_hash_func(itr->key, map->num_buckets);
 			addLast(map->buckets[hash], itr);
 			itr = next;
 			++map->num_elements;
@@ -184,12 +205,14 @@ static HashMapErrorCode resizeHashMap(HashMap* map)
 		}
 		old_buckets[i]->dummy->next = NULL;
 	}
+
+	return HASH_MAP_SUCCESS;
 }
 
 
 int hashMapInsert(HashMap* map, void* key, void* value)
 {
-	size_t hash = map->key_hash_func(key);
+	size_t hash = map->key_hash_func(key, map->num_buckets);
 	
 	void* new_value = map->handlers.value_copy(value);
 	if (!new_value) return HASH_MAP_MEM_ERROR;
