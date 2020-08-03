@@ -73,9 +73,29 @@ int test_insert()
 	assert_int_eq(hashMapSize(map), 1);
 	value = *(int*)hashMapGet(map, &k);
 	assert_int_eq(value, v);
+	
+	hashMapDestroy(map);
 	return 1;
 }
 
+
+int test_insert_resize()
+{
+	HashMap* map = hashMapInit(hash_int,
+				   compare_int,
+				   handlers);
+	for (int i = 0; i < 34; ++i)
+	{
+		int retval = hashMapInsert(map, &i, &i);
+		assert_int_eq(HASH_MAP_SUCCESS, retval);
+		assert_int_eq(hashMapSize(map), i + 1);
+		int value = *(int*)hashMapGet(map, &i);
+		assert_int_eq(value, i);
+	}
+	
+	hashMapDestroy(map);
+	return 1;
+}
 
 
 
@@ -84,5 +104,6 @@ int main()
 {
 	RUN_TEST(test_sanity);
 	RUN_TEST(test_insert);
+	RUN_TEST(test_insert_resize);
 	return 0;
 }

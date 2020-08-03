@@ -59,6 +59,8 @@ void bucketDestroy(Bucket* bucket, HashMapEntryHandlers handlers)
 		itr = itr->next;
 		free(temp);
 	}
+	free(bucket->dummy);
+	free(bucket);
 }
 
 
@@ -74,8 +76,9 @@ struct hash_map
 };
 
 
-Bucket** createBuckets(size_t size)
+static Bucket** createBucketArray(size_t size, HashMapErrorCode* status)
 {
+	assert (status);
 	size_t total_size = size * sizeof(Bucket*);
 	Bucket** buckets = calloc(1, total_size);
 	if (buckets)
@@ -86,11 +89,26 @@ Bucket** createBuckets(size_t size)
 			buckets[i] = bucketCreate();
 			if (!buckets[i])
 			{
-				return NULL;
+				*status = HASH_MAP_MEM_ERROR;	
 			}
 		}
 	}
 	return buckets;
+}
+
+
+static void destroyBucketArray(Bucket** buckets,
+			       size_t size,
+			       HashMapEntryHandlers handlers)
+{
+	if (buckets)
+	{	
+		for (size_t i = 0; i < size; ++i)
+		{
+			bucketDestroy(buckets[i], handlers);
+		}
+		free(buckets);
+	}
 }
 
 
@@ -112,12 +130,10 @@ HashMap* hashMapInit(key_hash_func_t key_hash_func,
 		map->key_cmp_func = key_cmp_func;
 		map->handlers = handlers;
 		
-		Bucket** buckets = createBuckets(map->num_buckets);
-		if (buckets)
-		{
-			map->buckets = buckets;
-		}
-		else
+		HashMapErrorCode status = HASH_MAP_SUCCESS;	
+		Bucket** buckets = createBucketArray(map->num_buckets, &status);
+		map->buckets = buckets;
+		if (HASH_MAP_SUCCESS != status)
 		{
 			hashMapDestroy(map);
 			map = NULL;
@@ -131,13 +147,7 @@ HashMap* hashMapInit(key_hash_func_t key_hash_func,
 void hashMapDestroy(HashMap* map)
 {
 	if (!map) return;
-	
-	for (size_t i = 0; i < map->num_buckets; ++i)
-	{
-		bucketDestroy(map->buckets[i], map->handlers);
-	}
-
-	free(map->buckets);
+	destroyBucketArray(map->buckets, map->num_buckets, map->handlers);
 	free(map);
 }
 
@@ -173,9 +183,11 @@ static void updateLoadFactor(HashMap* map)
 static HashMapErrorCode resizeHashMap(HashMap* map)
 {
 	size_t new_size = 2 * map->num_buckets;
-	Bucket** new_buckets = createBuckets(new_size);
-	if (!new_buckets)
+	HashMapErrorCode status = HASH_MAP_SUCCESS;
+	Bucket** new_buckets = createBucketArray(new_size, &status);
+	if (HASH_MAP_SUCCESS != status)
 	{
+		destroyBucketArray(new_buckets, new_size, map->handlers);
 		return HASH_MAP_MEM_ERROR;
 	}
 
@@ -206,6 +218,7 @@ static HashMapErrorCode resizeHashMap(HashMap* map)
 		old_buckets[i]->dummy->next = NULL;
 	}
 
+	destroyBucketArray(old_buckets, old_num_buckets, map->handlers);
 	return HASH_MAP_SUCCESS;
 }
 
@@ -226,7 +239,7 @@ int hashMapInsert(HashMap* map, void* key, void* value)
 	}
 	else
 	{
-		Entry* new_entry = malloc(sizeof(*new_entry));
+		Entry* new_entry = bucketEntryCreate(); 
 		if (!new_entry)
 		{
 			map->handlers.value_free(new_value);
