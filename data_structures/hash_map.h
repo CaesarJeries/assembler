@@ -39,7 +39,6 @@ HashMap* hashMapInit(key_hash_func_t key_hash_func,
 int hashMapContains(const HashMap* map, void* key);
 
 int hashMapInsert(HashMap* map, void* key, void* value);
-int hashMapUpdate(HashMap* map, void* key, void* value);
 
 void* hashMapGet(HashMap* map, void* key);
 void hashMapRemove(HashMap* map, void* key);

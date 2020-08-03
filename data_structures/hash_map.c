@@ -254,3 +254,23 @@ int hashMapInsert(HashMap* map, void* key, void* value)
 	return HASH_MAP_SUCCESS;
 }
 
+void* hashMapGet(HashMap* map, void* key)
+{
+	size_t hash = map->key_hash_func(key, map->num_buckets);
+	Entry* itr = map->buckets[hash]->dummy->next;
+	while (itr)
+	{
+		if (0 == map->key_cmp_func(key, itr->key))
+		{
+			return itr->value;
+		}
+	}
+
+	return NULL;
+}
+
+size_t hashMapSize(const HashMap* map)
+{
+	return map->num_elements;
+}
+
