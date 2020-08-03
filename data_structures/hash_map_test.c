@@ -123,6 +123,33 @@ int test_get()
 }
 
 
+int test_size()
+{
+	HashMap* map = hashMapInit(hash_int,
+				   compare_int,
+				   handlers);
+	int size = hashMapSize(map);
+	assert_int_eq(size, 0);
+
+	for (int i = 0; i < 34; ++i)
+	{
+		hashMapInsert(map, &i, &i);
+		size = hashMapSize(map);
+		assert_int_eq(size, i + 1);
+	}
+
+	for (int i = 33; i >= 0; --i)
+	{
+		hashMapRemove(map, &i);
+		size = hashMapSize(map);
+		assert_int_eq(size, i);
+	}
+
+	hashMapDestroy(map);
+	return 1;
+
+}
+
 
 int main()
 {
@@ -130,5 +157,6 @@ int main()
 	RUN_TEST(test_insert);
 	RUN_TEST(test_insert_resize);
 	RUN_TEST(test_get);
+	RUN_TEST(test_size);
 	return 0;
 }

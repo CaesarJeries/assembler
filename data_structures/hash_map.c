@@ -287,3 +287,22 @@ size_t hashMapSize(const HashMap* map)
 	return map->num_elements;
 }
 
+void hashMapRemove(HashMap* map, void* key)
+{
+	size_t hash = map->key_hash_func(key, map->num_buckets);
+	Bucket* bucket = map->buckets[hash];
+	Entry* target = findBucketEntry(bucket, key, map->key_cmp_func);
+	if (target)
+	{
+		Entry* itr = bucket->dummy;
+		while (itr->next != target) itr = itr->next;
+		itr->next = target->next;
+		target->next = NULL;
+		map->handlers.key_free(target->key);
+		map->handlers.value_free(target->value);
+		free(target);
+		--map->num_elements;
+		updateLoadFactor(map);
+	}
+}
+

@@ -35,18 +35,13 @@ HashMap* hashMapInit(key_hash_func_t key_hash_func,
 		     key_cmp_func_t key_cmp_func,
 	       	     HashMapEntryHandlers handlers);
 
-
-int hashMapContains(const HashMap* map, void* key);
+void hashMapDestroy(HashMap* map);
 
 int hashMapInsert(HashMap* map, void* key, void* value);
-
 void* hashMapGet(HashMap* map, void* key);
 void hashMapRemove(HashMap* map, void* key);
 
 size_t hashMapSize(const HashMap* map);
-int hashMapEmpty(const HashMap* map);
-
-void hashMapDestroy(HashMap* map);
 
 
 #endif // __HASH_MAP_H__
