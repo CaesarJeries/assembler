@@ -4,6 +4,6 @@
 #include <string.h>
 
 char* strdup(const char* str);
-char* itoa(int number);
+void itoa(char* dst, int number);
 
 #endif // __MY_STRING_H__

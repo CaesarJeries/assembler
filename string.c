@@ -45,7 +45,7 @@ static int num_digits(int n)
 	return length;
 }
 
-char* itoa(int orig)
+void itoa(char* dst, int orig)
 {
 	int number = orig;
 	size_t length = 0;
@@ -59,25 +59,19 @@ char* itoa(int orig)
 
 	int ndigits = num_digits(orig);
 	length += ndigits;
-	char* retval = malloc(length + 1);
-	if (retval)
+	char* itr = dst;
+	while (ndigits)
 	{
-		char* itr = retval;
-		while (ndigits)
-		{
-			char c = '0' + number % 10;
-			number /= 10;
-			--ndigits;
-			*itr = c;
-			++itr;
-		}
-
-		if (is_signed) *itr++ = '-';
-		
-		*itr = 0;
-		reverse(retval);
+		char c = '0' + number % 10;
+		number /= 10;
+		--ndigits;
+		*itr = c;
+		++itr;
 	}
 
-	return retval;
+	if (is_signed) *itr++ = '-';
+	
+	*itr = 0;
+	reverse(dst);
 }
 

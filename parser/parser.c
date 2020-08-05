@@ -113,6 +113,7 @@ static void str_free(void* s)
 }
 
 
+#define MAX_DIGIT_COUNT 42
 
 LinkedList* parse_data(const char* expr, char** error)
 {
@@ -129,8 +130,7 @@ LinkedList* parse_data(const char* expr, char** error)
 	char* token = strtok(copy, ",");
 	while (NULL != token)
 	{
-		const int max_digit_count = 42;
-		static char [max_digit_count] int_repr = {0};
+		static char int_repr[MAX_DIGIT_COUNT] = {0};
 		int value = parse_int(token, error);
 		if (*error != NULL)
 		{
@@ -140,7 +140,7 @@ LinkedList* parse_data(const char* expr, char** error)
 		}
 		else
 		{
-			itoa(value, int_repr, /*base=*/10);
+			itoa(int_repr, value);
 			if (LINKED_LIST_SUCCESS != linkedListInsert(list, int_repr))
 			{
 				*error = "Failed to allocate memory while parsing data array";

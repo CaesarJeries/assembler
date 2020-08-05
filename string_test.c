@@ -17,13 +17,12 @@ int test_strdup()
 
 int test_itoa()
 {
-	char* str = itoa(3);
+	static char str[50] = {0};
+	itoa(str, 3);
 	assert_str_eq(str, "3");
-	free(str);
 
-	str = itoa(-7);
+	itoa(str, -7);
 	assert_str_eq(str, "-7");
-	free(str);
 
 	return 1;
 }

@@ -38,7 +38,7 @@ test: include $(TEST_BASENAMES)
 HEADERS=$(shell find $(TOP) -type f -iname '*.h')
 
 include: | $(HEADERS)
-	ln -s $^ $@
+	ln -sf $(HEADERS) $(INCLUDE_DIR)
 
 $(HEADERS): | $(INCLUDE_DIR)
 
@@ -55,5 +55,6 @@ $(INCLUDE_DIR):
 
 clean:
 	rm -f *.d
+	rm -f *_test
 	rm -f *.o $(TARGET)
 	rm -rf $(INCLUDE_DIR)
