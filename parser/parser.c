@@ -61,13 +61,6 @@ char* parse_string(const char* expr, char** error)
 	}
 
 	++itr;
-
-	if (!isalpha(*itr) && '"' != *itr)
-	{
-		*error = "A string must start with a letter";
-		return NULL;
-	}
-
 	const char* str_start = itr;
 
 	while ('"' != *itr)

@@ -63,12 +63,28 @@ int test_parse_string_normal_case()
 	return 1;
 }
 
+int test_parse_string_error_case()
+{
+	char* error = NULL;
+	char* str = parse_string("aaaa", &error);
+	assert_null(str);
+	assert_not_null(error);
+	
+	str = parse_string("\"abc\n\"", &error);
+	assert_null(str);
+	assert_not_null(error);
+
+	return 1;
+}
+
+
 int main()
 {
 	RUN_TEST(test_parse_int_normal_case);
 	RUN_TEST(test_parse_int_error_case);
 	
 	RUN_TEST(test_parse_string_normal_case);
+	RUN_TEST(test_parse_string_error_case);
 	return 0;
 }
 
