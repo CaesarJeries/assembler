@@ -76,7 +76,7 @@ $(LIB_DIR):
 
 
 
-clean:
+clean: subdirs
 	rm -f *.d
 	rm -f *_test
 	rm -f *.o $(TARGET)
