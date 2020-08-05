@@ -95,9 +95,13 @@ static ListEntry* entryFind(LinkedList* list, void* data)
 void* linkedListContains(const LinkedList* list, void* data)
 {
 	assert(list);
-	void* found = NULL;
-
-	return found;
+	// const cast is ok since the list already exists, and we're not modifying it.
+	ListEntry* found = entryFind((LinkedList*)list, data);
+	if (found)
+	{
+		return found->data;
+	}
+	return NULL;
 }
 
 

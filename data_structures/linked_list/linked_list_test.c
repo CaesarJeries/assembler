@@ -49,6 +49,30 @@ int test_size()
 }
 
 
+int test_contains()
+{
+	LinkedList* list = linkedListInit(str_copy, str_compare, str_free);
+	
+	assert_null(linkedListContains(list, "aaaa"));
+	
+	char* value = NULL;
+	
+	linkedListInsert(list, "abc");
+	value = linkedListContains(list, "abc");
+	assert_not_null(value);
+	assert_str_eq(value, "abc");
+	
+	linkedListInsert(list, "abcd");
+	value = linkedListContains(list, "abcd");
+	assert_not_null(value);
+	assert_str_eq(value, "abcd");
+	
+	linkedListDestroy(list);
+	return 1;
+}
+
+
+
 int test_get_at()
 {
 	LinkedList* list = linkedListInit(str_copy, str_compare, str_free);
@@ -87,6 +111,7 @@ int main()
 {
 	RUN_TEST(test_sanity);
 	RUN_TEST(test_size);
+	RUN_TEST(test_contains);
 	RUN_TEST(test_get_at);
 
 	return 0;

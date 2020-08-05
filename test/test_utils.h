@@ -24,11 +24,17 @@
 
 
 #define assert_null(val) do{\
-	if ((val) != NULL) return 0; \
+	if ((val) != NULL){\
+		fprintf(stderr, "Value is not null");\
+		return 0; \
+	}\
 }while(0)
 
 #define assert_not_null(val) do{\
-	if ((val) == NULL) return 0; \
+	if ((val) == NULL) {\
+		return 0; \
+		fprintf(stderr, "Value is null");\
+	}\
 }while(0)
 
 
