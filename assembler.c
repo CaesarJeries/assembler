@@ -1,5 +1,5 @@
-#include <string.h>
-#include "assembly.h"
+#include "string.h"
+#include "assembler.h"
 
 int is_comment(const char* expr)
 {
@@ -9,27 +9,27 @@ int is_comment(const char* expr)
 
 int is_symbol(const char* expr)
 {
-	// todo
+	return 0; // todo: implement
 }
 
 int is_extern(const char* expr)
 {
-	return strstr(expr, ".extern");
+	return NULL != strstr(expr, ".extern");
 }
 
 int is_entry(const char* expr)
 {
-	return strstr(expr, ".entry");
+	return NULL != strstr(expr, ".entry");
 }
 
 
 int is_data(const char* expr)
 {
-	return strstr(expr, ".data");
+	return NULL != strstr(expr, ".data");
 }
 
 
 int is_string(const char* expr)
 {
-	return strstr(expr, ".string");
+	return NULL != strstr(expr, ".string");
 }
