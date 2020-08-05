@@ -6,7 +6,6 @@ GCC=gcc
 
 INCLUDE=$(TOP)/include/
 
-
 %.o: %.c %.h
 	$(GCC) $(FLAGS) -I $(INCLUDE) -c $< -o $@
 

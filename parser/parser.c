@@ -1,6 +1,8 @@
 #include <ctype.h>	// isdigit
 #include <malloc.h>
+#include <stdlib.h>	// itoa
 
+#include "linked_list.h"
 #include "string.h"
 #include "parser.h"
 
@@ -94,4 +96,64 @@ char* parse_string(const char* expr, char** error)
 }
 
 
+
+static void* str_copy(void* str)
+{
+	return strdup(str);
+}
+
+static int str_compare(void* s1, void* s2)
+{
+	return strcmp(s1, s2);
+}
+
+static void str_free(void* s)
+{
+	free(s);
+}
+
+
+
+LinkedList* parse_data(const char* expr, char** error)
+{
+	LinkedList* list = linkedListInit(str_copy, str_compare, str_free);
+	char* copy = strdup(expr);
+	if (!copy || !list)
+	{
+		*error = "Failed to allocate memory while parsing data array";
+		free(copy);
+		linkedListDestroy(list);
+		return NULL;
+	}
+
+	char* token = strtok(copy, ",");
+	while (NULL != token)
+	{
+		const int max_digit_count = 42;
+		static char [max_digit_count] int_repr = {0};
+		int value = parse_int(token, error);
+		if (*error != NULL)
+		{
+			free(copy);
+			linkedListDestroy(list);
+			return NULL;
+		}
+		else
+		{
+			itoa(value, int_repr, /*base=*/10);
+			if (LINKED_LIST_SUCCESS != linkedListInsert(list, int_repr))
+			{
+				*error = "Failed to allocate memory while parsing data array";
+				free(copy);
+				linkedListDestroy(list);
+				return NULL;
+			}
+		}
+
+		token = strtok(copy, ",");
+	}
+
+	free(copy);
+	return list;
+}
 

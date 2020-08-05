@@ -16,7 +16,7 @@ typedef struct linked_list LinkedList;
 
 typedef void* (*value_copy_func_t)(void*);
 typedef int (*value_cmp_func_t)(void*, void*);
-typedef void* (*value_free_func_t)(void*);
+typedef void (*value_free_func_t)(void*);
 
 LinkedList* linkedListInit(value_copy_func_t value_copy_func,
 			   value_cmp_func_t value_cmp_func,

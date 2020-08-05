@@ -1,3 +1,4 @@
+#include "linked_list.h"
 #include "parser.h"
 #include "string.h"
 #include "test_utils.h"
@@ -74,6 +75,17 @@ int test_parse_string_error_case()
 	assert_null(str);
 	assert_not_null(error);
 
+	return 1;
+}
+
+
+int test_parse_data()
+{
+	char* error = NULL;
+	LinkedList* list = parse_data("45, -13, 42", &error);
+	assert_int_eq(linkedListSize(list), 3);
+
+	linkedListDestroy(list);
 	return 1;
 }
 

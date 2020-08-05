@@ -4,10 +4,10 @@
 typedef struct bucket Bucket;
 
 Bucket* bucketCreate();
-void bucketDestroy(Bucket* entry);
+void bucketDestroy(Bucket* bucket);
 
-int bucketContains(void* key);
-int bucketInsert(void* key, void* value);
+int bucketContains(Bucket* bucket, void* key);
+int bucketInsert(Bucket* bucket, void* key, void* value);
 
 #endif // __BUCKET_ENTRY_H__
 

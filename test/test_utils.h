@@ -1,6 +1,8 @@
 #ifndef __TEST_UTILS_H__
 #define __TEST_UTILS_H__
 
+#include <assert.h>
+
 #include <stdio.h>
 #include <string.h>
 

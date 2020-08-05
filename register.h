@@ -11,17 +11,6 @@ typedef struct {
 } Register;
 
 
-typedef struct {
-	int op_code;
-	int source_address;
-	int source_reg;
-	int dst_address;
-	int dst_reg
-	int funct;
-	int A;
-	int R;
-	int E;
-} Instruction;
 
 
 typedef union {
@@ -29,26 +18,6 @@ typedef union {
 	Value value;
 	int is_inst;
 } Word;
-
-static const char* const instruction_map [] = 
-{
-	"mov",
-	"cmp",
-	"add",
-	"sub",
-	"lea",
-	"clr",
-	"not",
-	"inc",
-	"dec",
-	"jmp",
-	"bne",
-	"jsr",
-	"red",
-	"prn",
-	"rts",
-	"stop"
-};
 
 
 #endif //  __REGISTER_H__
