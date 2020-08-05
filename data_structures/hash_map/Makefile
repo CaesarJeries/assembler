@@ -1,7 +1,5 @@
 TOP=~/projects/assembler
 
-CFLAGS=-Wall -ansi -pedantic -std=c99
-CC=gcc
 FILES=$(wildcard *.h)
 FILES_ABS=$(abspath $(FILES))
 INCLUDE_DIR=$(TOP)/include/
@@ -13,19 +11,15 @@ SOURCES=$(shell find . -type f -iname '*.c' | grep -v test)
 TEST_SOURCES=$(shell find . -type f -iname '*_test.c')
 TEST_BASENAMES=$(foreach x, $(basename $(TEST_SOURCES)), $(x))
 
+CFLAGS=-Wall -ansi -pedantic -std=c99
+CFLAGS += $(addprefix -iquote, $(INCLUDE_DIR))
+CC=gcc
+
 OBJECTS=$(foreach x, $(basename $(SOURCES)), $(x).o)
 
-lib: |$(LIB_FULL_NAME)
-	ln -sf $(abspath $(LIB_FULL_NAME)) $(TOP)/lib/
-
-$(LIB_FULL_NAME): $(OBJECTS)
-	ar cr $@ $^
-
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -iquote $(INCLUDE_DIR) -c $< -o $@
 
 %_test: %_test.c %.o
-	$(CC) $(CFLAGS) -iquote $(INCLUDE_DIR) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 
 
 .PHONY: clean

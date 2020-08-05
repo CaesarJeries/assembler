@@ -2,7 +2,9 @@ main
 *_test
 *.o
 *.so
+*.a
 *.d
 *.swp
 include
+lib
 
