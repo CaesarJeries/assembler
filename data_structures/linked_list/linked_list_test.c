@@ -48,10 +48,47 @@ int test_size()
 	return 1;
 }
 
+
+int test_get_at()
+{
+	LinkedList* list = linkedListInit(str_copy, str_compare, str_free);
+	char* res = NULL;
+
+	assert_null(linkedListGetAt(list, 100));
+	assert_null(linkedListGetAt(list, 1));
+
+
+	linkedListInsert(list, "abc");
+	res = linkedListGetAt(list, 0);
+	assert_str_eq(res, "abc");
+	
+	linkedListInsert(list, "abcd");
+	res = linkedListGetAt(list, 0);
+	assert_str_eq(res, "abc");
+	res = linkedListGetAt(list, 1);
+	assert_str_eq(res, "abcd");
+	
+	linkedListInsert(list, "abcde");
+	res = linkedListGetAt(list, 0);
+	assert_str_eq(res, "abc");
+	
+	res = linkedListGetAt(list, 1);
+	assert_str_eq(res, "abcd");
+	
+	res = linkedListGetAt(list, 2);
+	assert_str_eq(res, "abcde");
+
+	linkedListDestroy(list);
+	return 1;
+
+}
+
 int main()
 {
 	RUN_TEST(test_sanity);
 	RUN_TEST(test_size);
+	RUN_TEST(test_get_at);
+
 	return 0;
 }
 
