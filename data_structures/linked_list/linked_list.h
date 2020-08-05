@@ -28,6 +28,8 @@ LinkedList* linkedListInit(value_copy_func_t value_copy_func,
 size_t linkedListSize(const LinkedList* list);
 void* linkedListContains(const LinkedList* list, void* value);
 
+void* linkedListGetAt(LinkedList* list, size_t index);
+
 int linkedListInsert(LinkedList* list, void* value);
 int linkedListRemove(LinkedList* list, void* value);
 void linkedListDestroy(LinkedList* list);

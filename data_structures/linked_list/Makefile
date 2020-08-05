@@ -11,10 +11,10 @@ all:
 	ln -s $(FILES_ABS) $(INCLUDE_DIR)
 
 %.o: %.c %.h
-	$(GCC) $(FLAGS) -I $(INCLUDE_DIR) -c $< -o $@
+	$(GCC) $(FLAGS) -iquote $(INCLUDE_DIR) -c $< -o $@
 
 %_test: %_test.c %.o 
-	$(GCC) $(FLAGS) -I $(INCLUDE_DIR) $^ -o $@
+	$(GCC) $(FLAGS) -iquote $(INCLUDE_DIR) $^ -o $@
 
 
 .PHONY: clean

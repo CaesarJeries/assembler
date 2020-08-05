@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include <malloc.h>
 #include "linked_list.h"
 
@@ -14,7 +16,7 @@ static ListEntry* entryCreate()
 	ListEntry* entry = malloc(sizeof(*entry));
 	if (entry)
 	{
-		entry-data = NULL;
+		entry->data = NULL;
 		entry->next = entry->prev = NULL;
 	}
 	return entry;
@@ -29,7 +31,7 @@ static void link(ListEntry* first, ListEntry* second)
 {
 	first->next = second;
 	second->prev = first;
-
+}
 
 struct linked_list
 {
@@ -45,6 +47,10 @@ LinkedList* linkedListInit(value_copy_func_t value_copy_func,
 			   value_cmp_func_t value_cmp_func,
 			   value_free_func_t value_free_func)
 {
+	assert(value_copy_func);
+	assert(value_cmp_func);
+	assert(value_free_func);
+	
 	LinkedList* list = malloc(sizeof(*list));
 	if (list)
 	{
@@ -57,6 +63,7 @@ LinkedList* linkedListInit(value_copy_func_t value_copy_func,
 		list->size = 0;
 		list->value_copy_func = value_copy_func;
 		list->value_cmp_func = value_cmp_func;
+		list->value_free_func = value_free_func;
 	}
 	return list;
 }
@@ -64,34 +71,55 @@ LinkedList* linkedListInit(value_copy_func_t value_copy_func,
 
 size_t linkedListSize(const LinkedList* list)
 {
+	assert(list);
 	return list->size;
 }
 
 
-static ListEntry* entryFind(LinkedList* list, void* value)
+static ListEntry* entryFind(LinkedList* list, void* data)
 {
+	assert(list);
 	ListEntry* curr = list->dummy->next;
 	while (curr)
 	{
-		if (0 == list->value_cmp_func(curr->value, value))
+		if (0 == list->value_cmp_func(curr->data, data))
 		{
 			return curr;
 		}
+		curr = curr->next;
 	}
 	return NULL;
 }
 
 
-void* linkedListContains(LinkedList* list, void* value)
+void* linkedListContains(const LinkedList* list, void* data)
 {
+	assert(list);
 	void* found = NULL;
 
 	return found;
 }
 
 
+void* linkedListGetAt(LinkedList* list, size_t index)
+{
+	assert(list);
+
+	ListEntry* itr = list->dummy->next;
+	while(itr && index)
+	{
+		itr = itr->next;
+		--index;
+	}
+	
+	if (itr) return itr->data;
+	return NULL;
+}
+
+
 static void addLast(LinkedList* list, ListEntry* entry)
 {
+	assert(list);
 	ListEntry* itr = list->dummy;
 	while (itr->next) itr = itr->next;
 	link(itr, entry);
@@ -99,23 +127,24 @@ static void addLast(LinkedList* list, ListEntry* entry)
 
 
 
-int linkedListInsert(LinkedList* list, void* value)
+int linkedListInsert(LinkedList* list, void* data)
 {
-	ListEntry* found = entryFind(list, value);
-	void* new_value = list->value_copy_func(value);
+	assert(list);
+	ListEntry* found = entryFind(list, data);
+	void* new_value = list->value_copy_func(data);
 	if (!new_value) return LINKED_LIST_MEM_ERROR;
 	
 	if (found)
 	{
-		list->value_free_func(found->value);
-		found->value = new_value;
+		list->value_free_func(found->data);
+		found->data = new_value;
 	}
 	else
 	{
 		ListEntry* new_entry = entryCreate();
 		if (!new_entry) return LINKED_LIST_MEM_ERROR;
 
-		new_entry->value = new_value;
+		new_entry->data = new_value;
 		addLast(list, new_entry);
 	}
 	++list->size;
@@ -130,13 +159,14 @@ static void unlink(ListEntry* entry)
 }
 
 
-int linkedListRemove(LinkedList* list, void* value)
+int linkedListRemove(LinkedList* list, void* data)
 {
-	ListEntry* found = entryFind(list, value);
+	assert(list);
+	ListEntry* found = entryFind(list, data);
 	if (found)
 	{
 		unlink(found);
-		list->value_free_func(found->value);
+		list->value_free_func(found->data);
 		entryDestroy(found);
 		--list->size;
 		return LINKED_LIST_SUCCESS;
@@ -152,12 +182,15 @@ void linkedListDestroy(LinkedList* list)
 		ListEntry* curr = list->dummy;
 		while (curr->next)
 		{
-			list->value_free_func(curr->value);
-			curr->value = NULL;
+			list->value_free_func(curr->data);
+			curr->data = NULL;
+			ListEntry* temp = curr;
 			curr = curr->next;
+			entryDestroy(temp);
 		}
 
-		list->value_free_func(curr->value);
+		list->value_free_func(curr->data);
+		entryDestroy(curr);
 		free(list);
 	}
 }
