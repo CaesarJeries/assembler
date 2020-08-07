@@ -17,6 +17,8 @@ DEPS=$(OBJECTS:%.o=%.d)
 
 TARGET=assembler
 
+all: main.o $(OBJECTS)
+	$(CC) $(CFLAGS) $^ -o $(TARGET)
 
 %.o : %.c
 	@# The -MMD flags additionaly creates a .d file with
@@ -28,9 +30,6 @@ TARGET=assembler
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-all: main.o $(OBJECTS)
-	$(CC) $(CFLAGS) $^ -o $(TARGET)
-
 
 %_test: %_test.c
 	$(CC) $(CFLAGS) $^ $(OBJECTS) -o $@
@@ -38,11 +37,19 @@ all: main.o $(OBJECTS)
 test: $(OBJECTS) $(TEST_BASENAMES)
 	echo "Building tests: $(TEST_BASENAMES)"
 
-.PHONY: all clean
+TEST_LOGFILE=tests.log
+
+run_test: test
+	echo "Executing tests: $(TEST_BASENAMES)"
+	$(foreach t, $(TEST_BASENAMES), $(shell echo $(t); $(t) >> $(TEST_LOGFILE)))
+	cat $(TEST_LOGFILE)
+
+.PHONY: all clean test run_test
 
 clean:
 	rm -f *.d
 	rm -f *_test
 	rm -f *.o
 	rm -f $(TARGET)
+	rm -f $(TEST_LOGFILE)
 
