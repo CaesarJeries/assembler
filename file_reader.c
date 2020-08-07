@@ -47,6 +47,13 @@ FileReaderStatus fileReaderGetLine(FileReader* fr, char** dst)
 }
 
 
+void fileReaderRewind(FileReader* fr)
+{
+	assert(fr);
+	fseek(fr->file_ptr, 0, SEEK_SET);
+}
+
+
 void fileReaderDestroy(FileReader* fr)
 {
 	if (fr)

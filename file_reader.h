@@ -14,6 +14,7 @@ typedef enum
 
 FileReader* fileReaderInit(const char* filename);
 FileReaderStatus fileReaderGetLine(FileReader* fr, char** dst);
+void fileReaderRewind(FileReader* fr);
 void fileReaderDestroy(FileReader* fr);
 
 #endif // __FILE_READER_H__
