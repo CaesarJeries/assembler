@@ -21,14 +21,11 @@ typedef struct
 	value_free_func_t value_free;
 } HashMapEntryHandlers;
 
-
-
 typedef enum
 {
 	HASH_MAP_SUCCESS,
 	HASH_MAP_MEM_ERROR
-} HashMapErrorCode;
-
+} HashMapStatus;
 
 
 HashMap* hashMapInit(key_hash_func_t key_hash_func,

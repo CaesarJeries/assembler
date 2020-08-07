@@ -10,10 +10,10 @@ typedef enum
 	FILE_READER_SUCCESS,
 	FILE_READER_EOF,
 	FILE_READER_ERROR
-} FileReaderErrorCode;
+} FileReaderStatus;
 
 FileReader* fileReaderInit(const char* filename);
-FileReaderErrorCode fileReaderGetLine(FileReader* fr, char** dst);
+FileReaderStatus fileReaderGetLine(FileReader* fr, char** dst);
 void fileReaderDestroy(FileReader* fr);
 
 #endif // __FILE_READER_H__

@@ -1,6 +1,7 @@
 TOP=$(abspath .)
 
-INCLUDE_DIR=test\
+INCLUDE_DIR=.\
+	    test\
 	    $()
 
 CFLAGS=-Wall -ansi -pedantic -std=c99

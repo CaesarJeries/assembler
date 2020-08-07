@@ -28,7 +28,7 @@ FileReader* fileReaderInit(const char* filename)
 }
 
 
-FileReaderErrorCode fileReaderGetLine(FileReader* fr, char** dst)
+FileReaderStatus fileReaderGetLine(FileReader* fr, char** dst)
 {
 	assert(fr);
 	assert(dst);

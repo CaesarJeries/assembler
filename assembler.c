@@ -1,35 +1,67 @@
-#include "string.h"
+#include <assert.h>
+#include <stddef.h>	// size_t
+#include <malloc.h>
+
 #include "assembler.h"
 
-int is_comment(const char* expr)
+#define MAX_FILENAME_LENGTH 128
+
+
+
+struct assembler
 {
-	return NULL != strchr(expr, ';');
+
+};
+
+
+static int is_valid_extension(const char* filename)
+{
+	size_t length = strlen(filename);
+	for (const char* itr = filename + length -1; itr > filename; --itr)
+	{
+		if ('.' == *itr)
+		{
+			return (0 == strcmp(itr, ".as"));
+		}
+	}
+
+	// file has no extension, and therefor valid
+	return 1;
 }
 
 
-int is_symbol(const char* expr)
+Assembler* assemblerInit()
 {
-	return 0; // todo: implement
-}
+	Assembler* assembler = malloc(sizeof(*assembler));
+	if (assembler)
+	{
+		//todo: init
+	}
 
-int is_extern(const char* expr)
-{
-	return NULL != strstr(expr, ".extern");
-}
-
-int is_entry(const char* expr)
-{
-	return NULL != strstr(expr, ".entry");
+	return assembler;
 }
 
 
-int is_data(const char* expr)
+AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename)
 {
-	return NULL != strstr(expr, ".data");
+	if (!is_valid_extension(filename))
+	{
+		printf("Invalid file extension: %s\n", filename);
+		return -1;
+	}
+}
+
+void assemblerReset(Assembler* assembler)
+{
+	// todo
 }
 
 
-int is_string(const char* expr)
+void assemblerDestroy(Assembler* assembler)
 {
-	return NULL != strstr(expr, ".string");
+	if (assembler)
+	{
+		; // todo
+	}
 }
+

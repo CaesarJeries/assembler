@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include "machine.h"
+#include "assembler.h"
+
 
 int main(int argc, const char **argv)
 {
@@ -11,31 +10,27 @@ int main(int argc, const char **argv)
 		return -1;
 	}
 
-	return 0;
-	/*
 	int handled_files = 0;
 	int total_files = argc - 1;
 
+	Assembler* assembler = assemblerInit();
 	while (handled_files < total_files)
 	{
+		assemblerReset(assembler);
 		++handled_files;
 		const char* input_filename = argv[handled_files];
+		
 		printf("Handling input file: %s\n", input_filename);
-		Machine* machine = machineInit(input_filename);
-
-		machineExecute(machine);
-		machineDestroy(machine);
+		int status = assemblerProcess(assembler, input_filename);
+		if (0 != status)
+		{
+			assemblerDestroy(assembler);
+			return -1;
+		}
+		
 	}
 
+	assemblerDestroy(assembler);
 	return 0;
-	*/
 }
 
-/**
- *
- * output:
- * symbol table: symbol, value, type
- * entries: name, value
- * externals: name, address
- *
- **/

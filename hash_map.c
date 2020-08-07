@@ -76,7 +76,7 @@ struct hash_map
 };
 
 
-static Bucket** createBucketArray(size_t size, HashMapErrorCode* status)
+static Bucket** createBucketArray(size_t size, HashMapStatus* status)
 {
 	assert (status);
 	size_t total_size = size * sizeof(Bucket*);
@@ -130,7 +130,7 @@ HashMap* hashMapInit(key_hash_func_t key_hash_func,
 		map->key_cmp_func = key_cmp_func;
 		map->handlers = handlers;
 		
-		HashMapErrorCode status = HASH_MAP_SUCCESS;	
+		HashMapStatus status = HASH_MAP_SUCCESS;	
 		Bucket** buckets = createBucketArray(map->num_buckets, &status);
 		map->buckets = buckets;
 		if (HASH_MAP_SUCCESS != status)
@@ -180,10 +180,10 @@ static void updateLoadFactor(HashMap* map)
 }
 
 
-static HashMapErrorCode resizeHashMap(HashMap* map)
+static HashMapStatus resizeHashMap(HashMap* map)
 {
 	size_t new_size = 2 * map->num_buckets;
-	HashMapErrorCode status = HASH_MAP_SUCCESS;
+	HashMapStatus status = HASH_MAP_SUCCESS;
 	Bucket** new_buckets = createBucketArray(new_size, &status);
 	if (HASH_MAP_SUCCESS != status)
 	{
