@@ -1,3 +1,5 @@
+#include <malloc.h>
+
 #include "linked_list.h"
 #include "parser.h"
 #include "string.h"
@@ -56,10 +58,12 @@ int test_parse_string_normal_case()
 	char* str = parse_string("\"abc\"", &error);
 	assert_str_eq(str, "abc");
 	assert_null(error);
+	free(str);
 	
 	str = parse_string("\"\"", &error);
 	assert_str_eq(str, "");
 	assert_null(error);
+	free(str);
 
 	return 1;
 }
