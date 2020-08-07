@@ -21,12 +21,6 @@ DEP = $(OBJECTS:%.o=%.d)
 
 TARGET=assembler
 
-.PHONY: clean subdirs $(SUBDIRS)
-
-subdirs: $(SUBDIRS)
-
-$(SUBDIRS):
-	make -C $@ $(MAKECMDGOALS)
 
 
 %.o : %.c
@@ -36,8 +30,18 @@ $(SUBDIRS):
 
 -include $(DEPS)
 
-all: include lib subdirs $(OBJECTS)
-	$(CC) $(CFLAGS) $^ -o $@
+.PHONY: target clean subdirs $(SUBDIRS)
+
+all: lib include target
+
+target: $(OBJECTS)
+	$(CC) $(CFLAGS) $^ -o $(TARGET)
+
+
+subdirs: $(SUBDIRS)
+
+$(SUBDIRS):
+	make -C $@ $(MAKECMDGOALS)
 
 %_test: %_test.c %.o
 	$(CC) $(CFLAGS) $^ -o $@

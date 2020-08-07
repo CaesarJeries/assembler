@@ -17,7 +17,7 @@ SOURCES=$(shell find . -type f -iname '*.c' | grep -v test)
 OBJECTS=$(foreach x, $(basename $(SOURCES)), $(x).o)
 
 lib: |$(LIB_FULL_NAME)
-	ln -sf $(abspath $(LIB_FULL_NAME)) $(LIB_DIR)
+	#ln -sf $(abspath $(LIB_FULL_NAME)) $(LIB_DIR)
 
 $(LIB_FULL_NAME): $(OBJECTS)
 	ar cr $@ $^

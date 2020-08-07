@@ -11,6 +11,8 @@ int main(int argc, const char **argv)
 		return -1;
 	}
 
+	return 0;
+	/*
 	int handled_files = 0;
 	int total_files = argc - 1;
 
@@ -26,6 +28,7 @@ int main(int argc, const char **argv)
 	}
 
 	return 0;
+	*/
 }
 
 /**
