@@ -5,10 +5,10 @@
 
 typedef enum
 {
-	LINKED_LIST_SUCCESS = 0,
+	LINKED_LIST_SUCCESS,
 	LINKED_LIST_MEM_ERROR,
 	LINKED_LIST_ELEM_NOT_FOUND
-} LinkedListErrorCode;
+} LinkedListStatus;
 
 
 
@@ -30,8 +30,9 @@ void* linkedListContains(const LinkedList* list, void* value);
 
 void* linkedListGetAt(LinkedList* list, size_t index);
 
-int linkedListInsert(LinkedList* list, void* value);
-int linkedListRemove(LinkedList* list, void* value);
+LinkedListStatus linkedListInsert(LinkedList* list, void* value);
+LinkedListStatus linkedListRemove(LinkedList* list, void* value);
+
 void linkedListDestroy(LinkedList* list);
 
 

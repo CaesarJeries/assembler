@@ -131,7 +131,7 @@ static void addLast(LinkedList* list, ListEntry* entry)
 
 
 
-int linkedListInsert(LinkedList* list, void* data)
+LinkedListStatus linkedListInsert(LinkedList* list, void* data)
 {
 	assert(list);
 	ListEntry* found = entryFind(list, data);
@@ -163,7 +163,7 @@ static void unlink(ListEntry* entry)
 }
 
 
-int linkedListRemove(LinkedList* list, void* data)
+LinkedListStatus linkedListRemove(LinkedList* list, void* data)
 {
 	assert(list);
 	ListEntry* found = entryFind(list, data);

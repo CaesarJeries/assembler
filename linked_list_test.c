@@ -104,8 +104,17 @@ int test_get_at()
 
 	linkedListDestroy(list);
 	return 1;
-
 }
+
+
+int test_remove()
+{
+	LinkedList* list = linkedListInit(str_copy, str_compare, str_free);
+	assert_int_eq(linkedListRemove(list, "aaaa"), LINKED_LIST_ELEM_NOT_FOUND);
+	linkedListDestroy(list);
+	return 1;
+}
+
 
 int main()
 {
@@ -113,6 +122,7 @@ int main()
 	RUN_TEST(test_size);
 	RUN_TEST(test_contains);
 	RUN_TEST(test_get_at);
+	RUN_TEST(test_remove);
 
 	return 0;
 }
