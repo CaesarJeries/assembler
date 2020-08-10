@@ -84,11 +84,6 @@ Assembler* assemblerInit()
 }
 
 
-char* search_for_label(char* line, char** label)
-{
-	// todo: implement
-	return line;
-}
 
 
 static void /* todo: change retval */ parseLine(Assembler* assembler, FileReader* fr, char* line)
@@ -96,7 +91,12 @@ static void /* todo: change retval */ parseLine(Assembler* assembler, FileReader
 	debug("Parsing line: %s", line);
 	char* label = NULL;
 	char* itr = search_for_label(line, &label);
-
+	
+	if (label)
+	{
+		debug("Found label: %s", label);
+	}
+	
 	if (is_data(line))
 	{
 		debug("Data directive detected");

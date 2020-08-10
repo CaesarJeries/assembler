@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ctype.h>	// isdigit, isspace
 #include <malloc.h>
 
@@ -7,6 +8,44 @@
 #include "parser.h"
 
 
+static char* skip_whitespace(char* itr)
+{
+	while (*itr && isspace(*itr))
+	{
+		++itr;
+	}
+	
+	return itr;
+}
+
+
+char* search_for_label(char* line, char** label_dst)
+{
+	assert(line);
+	assert(label_dst);
+
+	char* itr = line;
+	char* start = NULL;
+	char* end = NULL;
+	
+	start = skip_whitespace(itr);
+	end = start;	
+	while (*end)
+	{
+		if (':' == *end)
+		{
+			*end = 0;
+			char* label = strdup(start);
+			*end = ':';
+			*label_dst = label;
+			return end + 1;
+		}
+		++end;
+	}
+	
+	*label_dst = NULL;
+	return line;
+}
 
 
 int parse_int(const char* expr, char** error_msg)
@@ -130,11 +169,17 @@ static void str_free(void* s)
 static const char* skip_directive(const char* expr)
 {
 	const char* itr = expr;
+	int directive_found = 0;
 	while (*itr)
 	{
-		if (':' == *itr)
+		if (isspace(*itr) && directive_found)
 		{
-			return itr + 1;
+			return itr;
+		}
+
+		if ('.' == *itr)
+		{
+			directive_found = 1;
 		}
 
 		++itr;
