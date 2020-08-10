@@ -1,7 +1,7 @@
 #ifndef __FILE_READER_H__
 #define __FILE_READER_H__
 
-#define MAX_LINE_SIZE 80
+#define MAX_LINE_SIZE 128
 
 typedef struct file_reader FileReader;
 
@@ -13,7 +13,10 @@ typedef enum
 } FileReaderStatus;
 
 FileReader* fileReaderInit(const char* filename);
-FileReaderStatus fileReaderGetLine(FileReader* fr, char** dst);
+FileReaderStatus fileReaderGetLine(FileReader* fr, char* dst);
+
+const char* fileReaderGetFilename(FileReader* fr);
+
 void fileReaderRewind(FileReader* fr);
 void fileReaderDestroy(FileReader* fr);
 

@@ -1,9 +1,22 @@
+#include <ctype.h>	// isspace
+
 #include "string.h"
 #include "grammar.h"
 
 int is_comment(const char* expr)
 {
 	return NULL != strchr(expr, ';');
+}
+
+int is_whitespace(const char* expr)
+{
+	while (*expr)
+	{
+		if (!isspace(*expr))
+			return 0;
+		++expr;
+	}
+	return 1;
 }
 
 

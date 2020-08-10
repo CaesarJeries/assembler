@@ -1,27 +1,39 @@
-#include <ctype.h>	// isdigit
+#include <ctype.h>	// isdigit, isspace
 #include <malloc.h>
-#include <stdlib.h>	// itoa
 
 #include "linked_list.h"
+#include "logging.h"
 #include "string.h"
 #include "parser.h"
 
+
+
+
 int parse_int(const char* expr, char** error_msg)
 {
+	debug("Parsing int from %s", expr);
 	const char* itr = expr;
 	char sign = '*'; // initialize with a sentinel value
 
-	if (*expr == '-' || *expr == '+')
+	while (*itr && isspace(*itr)) ++itr;
+
+	if (*itr == '-' || *itr == '+')
 	{
-		sign = *expr;
+		sign = *itr;
 		++itr;
 	}
 
 	const char* str_start = itr;
-	while ('\n' != *itr)
+	while (*itr && '\n' != *itr)
 	{
+		if  (isspace(*itr))
+		{
+			++itr;
+			continue;
+		}
 		if (!isdigit(*itr))
 		{
+			debug("Invalid character: %c", *itr);
 			*error_msg = "Encountered a non-digit character while parsing an integer";
 			return 0;
 		}
@@ -115,10 +127,28 @@ static void str_free(void* s)
 
 #define MAX_DIGIT_COUNT 42
 
+static const char* skip_directive(const char* expr)
+{
+	const char* itr = expr;
+	while (*itr)
+	{
+		if (':' == *itr)
+		{
+			return itr + 1;
+		}
+
+		++itr;
+	}
+
+	return itr;
+}
+		
+
+
 LinkedList* parse_data(const char* expr, char** error)
 {
 	LinkedList* list = linkedListInit(str_copy, str_compare, str_free);
-	char* copy = strdup(expr);
+	char* copy = strdup(skip_directive(expr));
 	if (!copy || !list)
 	{
 		*error = "Failed to allocate memory while parsing data array";
@@ -130,6 +160,7 @@ LinkedList* parse_data(const char* expr, char** error)
 	char* token = strtok(copy, ",");
 	while (NULL != token)
 	{
+		debug("Handling token: %s", token);
 		static char int_repr[MAX_DIGIT_COUNT] = {0};
 		int value = parse_int(token, error);
 		if (*error != NULL)
@@ -140,6 +171,7 @@ LinkedList* parse_data(const char* expr, char** error)
 		}
 		else
 		{
+			debug("Successfully parsed value: %d", value);
 			itoa(int_repr, value);
 			if (LINKED_LIST_SUCCESS != linkedListInsert(list, int_repr))
 			{
@@ -148,9 +180,11 @@ LinkedList* parse_data(const char* expr, char** error)
 				linkedListDestroy(list);
 				return NULL;
 			}
+			
+			debug("Successfully added %s to the list", int_repr);
 		}
 
-		token = strtok(copy, ",");
+		token = strtok(NULL, ",");
 	}
 
 	free(copy);

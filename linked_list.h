@@ -15,13 +15,13 @@ typedef enum
 
 typedef struct linked_list LinkedList;
 
-typedef void* (*value_copy_func_t)(void*);
-typedef int (*value_cmp_func_t)(void*, void*);
-typedef void (*value_free_func_t)(void*);
+typedef void* (*list_value_copy_func_t)(void*);
+typedef int (*list_value_cmp_func_t)(void*, void*);
+typedef void (*list_value_free_func_t)(void*);
 
-LinkedList* linkedListInit(value_copy_func_t value_copy_func,
-			   value_cmp_func_t value_cmp_func,
-			   value_free_func_t value_free_func);
+LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,
+			   list_value_cmp_func_t value_cmp_func,
+			   list_value_free_func_t value_free_func);
 
 
 

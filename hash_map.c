@@ -46,10 +46,8 @@ Bucket* bucketCreate()
 }
 
 
-void bucketDestroy(Bucket* bucket, HashMapEntryHandlers handlers)
+static void bucketClear(Bucket* bucket, HashMapEntryHandlers handlers)
 {
-	if (!bucket) return;
-
 	Entry* itr = bucket->dummy->next;
 	while (itr)
 	{
@@ -59,6 +57,13 @@ void bucketDestroy(Bucket* bucket, HashMapEntryHandlers handlers)
 		itr = itr->next;
 		free(temp);
 	}
+}
+
+void bucketDestroy(Bucket* bucket, HashMapEntryHandlers handlers)
+{
+	if (!bucket) return;
+	
+	bucketClear(bucket, handlers);
 	free(bucket->dummy);
 	free(bucket);
 }
@@ -141,6 +146,16 @@ HashMap* hashMapInit(key_hash_func_t key_hash_func,
 	}
 
 	return map;
+}
+
+void hashMapClear(HashMap* map)
+{
+	size_t size = map->num_buckets;
+	
+	for (size_t i = 0; i < size; ++i)
+	{
+		bucketClear(map->buckets[i], map->handlers);
+	}
 }
 
 

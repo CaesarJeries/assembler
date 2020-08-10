@@ -32,6 +32,7 @@ HashMap* hashMapInit(key_hash_func_t key_hash_func,
 		     key_cmp_func_t key_cmp_func,
 	       	     HashMapEntryHandlers handlers);
 
+void hashMapClear(HashMap* map);
 void hashMapDestroy(HashMap* map);
 
 int hashMapInsert(HashMap* map, void* key, void* value);

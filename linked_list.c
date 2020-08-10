@@ -1,6 +1,6 @@
 #include <assert.h>
-
 #include <malloc.h>
+
 #include "linked_list.h"
 
 typedef struct list_entry
@@ -37,15 +37,15 @@ struct linked_list
 {
 	ListEntry* dummy;
 	size_t size;
-	value_copy_func_t value_copy_func;
-	value_cmp_func_t value_cmp_func;
-	value_free_func_t value_free_func;
+	list_value_copy_func_t value_copy_func;
+	list_value_cmp_func_t value_cmp_func;
+	list_value_free_func_t value_free_func;
 };
 
 
-LinkedList* linkedListInit(value_copy_func_t value_copy_func,
-			   value_cmp_func_t value_cmp_func,
-			   value_free_func_t value_free_func)
+LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,
+			   list_value_cmp_func_t value_cmp_func,
+			   list_value_free_func_t value_free_func)
 {
 	assert(value_copy_func);
 	assert(value_cmp_func);

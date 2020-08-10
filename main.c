@@ -27,7 +27,6 @@ int main(int argc, const char **argv)
 			assemblerDestroy(assembler);
 			return -1;
 		}
-		
 	}
 
 	assemblerDestroy(assembler);
