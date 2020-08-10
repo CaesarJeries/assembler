@@ -24,6 +24,8 @@ LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,
 			   list_value_free_func_t value_free_func);
 
 
+LinkedList* linkedListCopy(LinkedList* other);
+
 
 size_t linkedListSize(const LinkedList* list);
 void* linkedListContains(const LinkedList* list, void* value);

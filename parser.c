@@ -8,18 +8,50 @@
 #include "parser.h"
 
 
-static char* skip_whitespace(char* itr)
+#define MAX_DIGIT_COUNT 42
+
+
+static const char* skip_whitespace(const char* expr)
 {
+	const char* itr = expr;
 	while (*itr && isspace(*itr))
 	{
 		++itr;
 	}
 	
+	if (!*itr) return expr;
+		
 	return itr;
 }
 
 
-char* search_for_label(char* line, char** label_dst)
+static const char* skip_directive(const char* expr)
+{
+	const char* itr = expr;
+	int directive_found = 0;
+	
+	itr = skip_whitespace(itr);
+	while (*itr)
+	{
+		if (isspace(*itr) && directive_found)
+		{
+			return itr;
+		}
+
+		if ('.' == *itr)
+		{
+			directive_found = 1;
+		}
+
+		++itr;
+	}
+
+	if (!*itr) return expr;
+	return itr;
+}
+
+
+const char* search_for_label(const char* line, char** label_dst)
 {
 	assert(line);
 	assert(label_dst);
@@ -48,37 +80,58 @@ char* search_for_label(char* line, char** label_dst)
 }
 
 
+int str_to_int(const char* str_start, const char* str_end)
+{
+	int exp = 1;
+	int number = 0;
+	for (const char* itr = str_start; itr < str_end; ++itr)
+	{
+		debug("Handling character: %c", *itr);
+		int digit = *itr - '0';
+		if (0 == digit && 1 == exp) continue;
+		number *= exp;
+		number += digit;
+		exp = 10;
+	}
+
+	debug("Parsed %d from string", number);
+	return number;
+}
+
+
 int parse_int(const char* expr, char** error_msg)
 {
-	debug("Parsing int from %s", expr);
-	const char* itr = expr;
+	const char* itr = skip_whitespace(expr);
+	debug("Parsing int from %s", itr);
 	char sign = '*'; // initialize with a sentinel value
 
-	while (*itr && isspace(*itr)) ++itr;
 
-	if (*itr == '-' || *itr == '+')
+	if ('-' == *itr || '+' == *itr)
 	{
 		sign = *itr;
+		debug("Sign found: %c", sign);
 		++itr;
 	}
 
 	const char* str_start = itr;
-	while (*itr && '\n' != *itr)
+	debug("Parsing absolute value from %s", str_start);
+
+	while ((*itr) && isdigit(*itr))
 	{
-		if  (isspace(*itr))
-		{
-			++itr;
-			continue;
-		}
-		if (!isdigit(*itr))
-		{
-			debug("Invalid character: %c", *itr);
-			*error_msg = "Encountered a non-digit character while parsing an integer";
-			return 0;
-		}
-		
 		++itr;
 	}
+
+	if (!*itr)
+	{
+		if (isdigit(*itr) && !isspace(*itr))
+		{
+			*error_msg = "Encountered a non-digit character when parsing an integer";
+			debug("Invalid character: %d", *itr);
+
+			return -1;
+		}
+	}
+
 	const char* str_end = itr;
 	size_t str_length = str_end - str_start;
 	if (0 == str_length)
@@ -87,17 +140,8 @@ int parse_int(const char* expr, char** error_msg)
 		return 0;
 	}
 
-	int exp = 1;
-	int number = 0;
-	for (itr = str_start; itr < str_end; ++itr)
-	{
-		int digit = *itr - '0';
-		if (0 == digit && 1 == exp) continue;
-		number *= exp;
-		number += digit;
-		exp *= 10;
-	}
-
+	debug("number of digits: %d", str_length);
+	int number = str_to_int(str_start, str_end);
 	if (sign == '-') number *= -1;
 
 	return number;
@@ -106,9 +150,14 @@ int parse_int(const char* expr, char** error_msg)
 
 char* parse_string(const char* expr, char** error)
 {
+	debug("Parsing string from expression: %s", expr);
 	const char* itr = expr;
+	
+	itr = skip_whitespace(skip_directive(itr));
+	debug("Removed leading whitespace: %s", itr);
 	if ('"' != *itr)
 	{
+		debug("Strings must start with \"");
 		*error = "A string must be enclosed with \"";
 		return NULL;
 	}
@@ -120,6 +169,7 @@ char* parse_string(const char* expr, char** error)
 	{
 		if ('\n' == *itr)
 		{
+			debug("Encountered new line in the middle of a string");
 			*error = "New line encountered in the middle of a string";
 			return NULL;
 		}
@@ -129,6 +179,7 @@ char* parse_string(const char* expr, char** error)
 
 	const char* str_end = itr;
 	size_t str_length = str_end - str_start;
+	debug("String length: %lu", str_length);
 	char* new_str = malloc(str_length + 1);
 	if (!new_str)
 	{
@@ -164,36 +215,12 @@ static void str_free(void* s)
 }
 
 
-#define MAX_DIGIT_COUNT 42
-
-static const char* skip_directive(const char* expr)
-{
-	const char* itr = expr;
-	int directive_found = 0;
-	while (*itr)
-	{
-		if (isspace(*itr) && directive_found)
-		{
-			return itr;
-		}
-
-		if ('.' == *itr)
-		{
-			directive_found = 1;
-		}
-
-		++itr;
-	}
-
-	return itr;
-}
-		
-
 
 LinkedList* parse_data(const char* expr, char** error)
 {
 	LinkedList* list = linkedListInit(str_copy, str_compare, str_free);
-	char* copy = strdup(skip_directive(expr));
+	const char* itr = skip_whitespace(expr);
+	char* copy = strdup(skip_directive(itr));
 	if (!copy || !list)
 	{
 		*error = "Failed to allocate memory while parsing data array";
@@ -216,8 +243,8 @@ LinkedList* parse_data(const char* expr, char** error)
 		}
 		else
 		{
-			debug("Successfully parsed value: %d", value);
 			itoa(int_repr, value);
+			debug("Successfully parsed value: %d", value);
 			if (LINKED_LIST_SUCCESS != linkedListInsert(list, int_repr))
 			{
 				*error = "Failed to allocate memory while parsing data array";

@@ -238,7 +238,7 @@ static HashMapStatus resizeHashMap(HashMap* map)
 }
 
 
-int hashMapInsert(HashMap* map, void* key, void* value)
+int hashMapInsert(HashMap* map, const void* key, const void* value)
 {
 	size_t hash = map->key_hash_func(key, map->num_buckets);
 	
@@ -282,7 +282,7 @@ int hashMapInsert(HashMap* map, void* key, void* value)
 	return HASH_MAP_SUCCESS;
 }
 
-void* hashMapGet(HashMap* map, void* key)
+void* hashMapGet(HashMap* map, const void* key)
 {
 	size_t hash = map->key_hash_func(key, map->num_buckets);
 	Entry* itr = map->buckets[hash]->dummy->next;
@@ -302,7 +302,7 @@ size_t hashMapSize(const HashMap* map)
 	return map->num_elements;
 }
 
-void hashMapRemove(HashMap* map, void* key)
+void hashMapRemove(HashMap* map, const void* key)
 {
 	size_t hash = map->key_hash_func(key, map->num_buckets);
 	Bucket* bucket = map->buckets[hash];

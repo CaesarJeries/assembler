@@ -69,6 +69,12 @@ LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,
 }
 
 
+LinkedList* linkedListCopy(LinkedList* other)
+{
+	return other;
+}
+
+
 size_t linkedListSize(const LinkedList* list)
 {
 	assert(list);

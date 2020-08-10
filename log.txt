@@ -1,0 +1,31 @@
+Handling input file: test/end-to-end/data_spaces.as
+file: /home/caesar/projects/assembler/assembler.c, line: 336: Processing file: test/end-to-end/data_spaces.as
+file: /home/caesar/projects/assembler/assembler.c, line: 344: File has a valid extension
+file: /home/caesar/projects/assembler/assembler.c, line: 353: File reader initialized
+file: /home/caesar/projects/assembler/assembler.c, line: 284: Starting first pass
+file: /home/caesar/projects/assembler/file_reader.c, line: 42: Reading next line
+file: /home/caesar/projects/assembler/file_reader.c, line: 46: fgets returned
+file: /home/caesar/projects/assembler/file_reader.c, line: 58: Successfully read line:  		  DATA_LABEL323:    .data 		-42  ,  13 , 441, 134134   
+
+file: /home/caesar/projects/assembler/assembler.c, line: 290: Read line. Checking status.
+file: /home/caesar/projects/assembler/assembler.c, line: 257: Parsing line:  		  DATA_LABEL323:    .data 		-42  ,  13 , 441, 134134   
+
+file: /home/caesar/projects/assembler/assembler.c, line: 263: Found label: DATA_LABEL323
+file: /home/caesar/projects/assembler/assembler.c, line: 268: Data directive detected
+file: /home/caesar/projects/assembler/assembler.c, line: 225: Successfully added new label
+file: /home/caesar/projects/assembler/parser.c, line: 229: Handling token:  		-42  
+file: /home/caesar/projects/assembler/parser.c, line: 103: Parsing int from -42  
+file: /home/caesar/projects/assembler/parser.c, line: 110: Sign found: -
+file: /home/caesar/projects/assembler/parser.c, line: 115: Parsing absolute value from 42  
+file: /home/caesar/projects/assembler/parser.c, line: 240: Successfully parsed value: -42
+file: /home/caesar/projects/assembler/parser.c, line: 250: Successfully added -42 to the list
+file: /home/caesar/projects/assembler/parser.c, line: 229: Handling token:   13 
+file: /home/caesar/projects/assembler/parser.c, line: 103: Parsing int from 13 
+file: /home/caesar/projects/assembler/parser.c, line: 115: Parsing absolute value from 13 
+file: /home/caesar/projects/assembler/parser.c, line: 240: Successfully parsed value: 13
+file: /home/caesar/projects/assembler/parser.c, line: 250: Successfully added 13 to the list
+file: /home/caesar/projects/assembler/parser.c, line: 229: Handling token:  441
+file: /home/caesar/projects/assembler/parser.c, line: 103: Parsing int from 441
+file: /home/caesar/projects/assembler/parser.c, line: 115: Parsing absolute value from 441
+file: /home/caesar/projects/assembler/parser.c, line: 125: Invalid character: 0
+Encountered a non-digit character when parsing an integer

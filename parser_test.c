@@ -9,16 +9,20 @@
 int test_parse_int_normal_case()
 {
 	char* error = NULL;
-	char expr[20] = "20\n";
+	char expr[20] = "20";
 	assert_int_eq(20, parse_int(expr, &error));
 	assert_null(error);
 
-	strcpy(expr, "-20\n");
+	strcpy(expr, "-20");
 	assert_int_eq(-20, parse_int(expr, &error));
 	assert_null(error);
 	
-	strcpy(expr, "-000020\n");
+	strcpy(expr, "-000020");
 	assert_int_eq(-20, parse_int(expr, &error));
+	assert_null(error);
+	
+	strcpy(expr, "\t43   ");
+	assert_int_eq(43, parse_int(expr, &error));
 	assert_null(error);
 
 	return 1;
