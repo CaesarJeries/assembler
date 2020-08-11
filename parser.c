@@ -56,9 +56,9 @@ const char* search_for_label(const char* line, char** label_dst)
 	assert(line);
 	assert(label_dst);
 
-	char* itr = line;
-	char* start = NULL;
-	char* end = NULL;
+	const char* itr = line;
+	const char* start = NULL;
+	const char* end = NULL;
 	
 	start = skip_whitespace(itr);
 	end = start;	
@@ -66,9 +66,7 @@ const char* search_for_label(const char* line, char** label_dst)
 	{
 		if (':' == *end)
 		{
-			*end = 0;
-			char* label = strdup(start);
-			*end = ':';
+			char* label = strndup(start, end - start);
 			*label_dst = label;
 			return end + 1;
 		}
@@ -198,12 +196,12 @@ char* parse_string(const char* expr, char** error)
 
 
 
-static void* str_copy(void* str)
+static void* str_copy(const void* str)
 {
 	return strdup(str);
 }
 
-static int str_compare(void* s1, void* s2)
+static int str_compare(const void* s1, const void* s2)
 {
 	return strcmp(s1, s2);
 }

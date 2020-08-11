@@ -15,8 +15,8 @@ typedef enum
 
 typedef struct linked_list LinkedList;
 
-typedef void* (*list_value_copy_func_t)(void*);
-typedef int (*list_value_cmp_func_t)(void*, void*);
+typedef void* (*list_value_copy_func_t)(const void*);
+typedef int (*list_value_cmp_func_t)(const void*, const void*);
 typedef void (*list_value_free_func_t)(void*);
 
 LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,
@@ -24,7 +24,7 @@ LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,
 			   list_value_free_func_t value_free_func);
 
 
-LinkedList* linkedListCopy(LinkedList* other);
+LinkedList* linkedListCopy(const LinkedList* other);
 
 
 size_t linkedListSize(const LinkedList* list);

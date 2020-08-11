@@ -64,16 +64,21 @@ READ:	line = fgets(dst, MAX_LINE_SIZE + 1, fr->file_ptr);
 }
 
 
-const char* fileReaderGetFilename(FileReader* fr)
+const char* fileReaderGetFilename(const FileReader* fr)
 {
 	return fr->filename;
 }
 
+size_t fileReaderGetLineNum(const FileReader* fr)
+{
+	return fr->curr_line;
+}
 
 void fileReaderRewind(FileReader* fr)
 {
 	assert(fr);
 	fseek(fr->file_ptr, 0, SEEK_SET);
+	fr->curr_line = 0;
 }
 
 

@@ -5,12 +5,12 @@
 
 typedef struct hash_map HashMap;
 
-typedef size_t (*key_hash_func_t)(void*, size_t size);
-typedef void* (*key_copy_func_t)(void*);
-typedef int (*key_cmp_func_t)(void*, void*);
+typedef size_t (*key_hash_func_t)(const void*, size_t size);
+typedef void* (*key_copy_func_t)(const void*);
+typedef int (*key_cmp_func_t)(const void*, const void*);
 typedef void (*key_free_func_t)(void*);
 
-typedef void* (*value_copy_func_t)(void*);
+typedef void* (*value_copy_func_t)(const void*);
 typedef void (*value_free_func_t)(void*);
 
 typedef struct

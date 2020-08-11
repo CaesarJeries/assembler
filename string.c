@@ -16,6 +16,20 @@ char* strdup(const char* str)
 }
 
 
+char* strndup(const char* str, size_t size)
+{
+	char* new_str = malloc(size + 1);
+	if (new_str)
+	{
+		strncpy(new_str, str, size);
+	}
+	
+	new_str[size] = 0;
+	return new_str;
+
+}
+
+
 static void reverse(char* str)
 {
 	size_t length = strlen(str);

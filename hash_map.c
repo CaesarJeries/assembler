@@ -167,7 +167,7 @@ void hashMapDestroy(HashMap* map)
 }
 
 
-static Entry* findBucketEntry(Bucket* bucket, void* key, key_cmp_func_t key_cmp_func)
+static Entry* findBucketEntry(Bucket* bucket, const void* key, key_cmp_func_t key_cmp_func)
 {
 	Entry* itr = bucket->dummy->next;
 	while (itr)

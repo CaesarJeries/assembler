@@ -14,6 +14,7 @@
 #include "string.h"
 
 #define MAX_FILENAME_LENGTH 128
+#define WORD_SIZE 24
 
 typedef int (*line_type_t) (const char*);
 typedef void* (*type_handler_t)(void* params);
@@ -56,7 +57,7 @@ typedef enum
 
 } SymbolType;
 
-static size_t str_hash(void* ptr, size_t size)
+static size_t str_hash(const void* ptr, size_t size)
 {
 	const char* str = ptr;
 	size_t hash = 5381;
@@ -72,21 +73,21 @@ static size_t str_hash(void* ptr, size_t size)
 	return hash % size;
 }
 
-static size_t int_hash(void* n, size_t size)
+static size_t int_hash(const void* n, size_t size)
 {
-	return (*(size_t*) n) % size;
+	return (*(const size_t*) n) % size;
 }
 
-static int int_cmp(void* a, void* b)
+static int int_cmp(const void* a, const void* b)
 {
-	int first = *(int*) a;
-	int second = *(int*) b;
+	int first = *(const int*) a;
+	int second = *(const int*) b;
 
 	return first - second;
 }
 
 
-static void* int_copy(void* n)
+static void* int_copy(const void* n)
 {
 	int* new_value = malloc(sizeof(int));
 	if (new_value)
@@ -102,7 +103,7 @@ static void int_free(void* n)
 }
 
 
-static void* str_copy(void* s)
+static void* str_copy(const void* s)
 {
 	return strdup(s);
 }
@@ -112,14 +113,14 @@ static void str_free(void* s)
 	free(s);
 }
 
-static int str_cmp(void* s1, void* s2)
+static int str_cmp(const void* s1, const void* s2)
 {
 	return strcmp(s1, s2);
 }
 
 
 
-static void* symbolCopy(void* other)
+static void* symbolCopy(const void* other)
 {
 	Symbol* new_symbol = malloc(sizeof(*new_symbol));
 	if (new_symbol)
@@ -135,7 +136,7 @@ static void symbolFree(void* s)
 	free(s);
 }
 
-static void* list_copy(void* list)
+static void* list_copy(const void* list)
 {
 	return linkedListCopy(list);
 }
@@ -215,8 +216,8 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 	LinkedList* data_list = parse_data(line, &error_msg);
 	if (!data_list)
 	{
-		report_error(error_msg);
-		return;
+		error("%s", error_msg);
+		return -1;
 	}
 
 	size_t list_size = linkedListSize(data_list);
@@ -240,6 +241,8 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 
 static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)
 {
+	//todo: handle error case
+	//todo: replace parsing with sscanf calls
 	const char* itr = skip_directive(line);
 	itr = skip_whitespace(itr);
 
@@ -257,6 +260,10 @@ static int parse_extern_unit(Assembler* assembler, const char* line, const char*
 }
 
 
+
+
+
+
 static int parse_command_unit(Assembler* assembler, const char* line, const char* label)
 {
 	static char cmd_name[MAX_CMD_SIZE] = {0};
@@ -268,7 +275,7 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 		error("Failed to parse instruction: %s", line);
 		return -1;
 	}
-		
+
 	return 0;
 }
 
@@ -314,34 +321,40 @@ static int parseLine(Assembler* assembler, FileReader* fr, const char* line)
 {
 	debug("Parsing line: %s", line);
 	char* label = NULL;
-	char* itr = search_for_label(line, &label);
-	
+	const char* itr = search_for_label(line, &label);
+	int status = 0;	
 	if (label)
 	{
 		debug("Found label: %s", label);
 	}
 	
-	if (is_data(line))
+	if (is_data(itr))
 	{
 		debug("Data directive detected");
-		parse_data_unit(assembler, line, label);
+		status = parse_data_unit(assembler, itr, label);
 	}
-	else if (is_string(line))
+	else if (is_string(itr))
 	{
 		debug("String directive detected");
-		parse_string_unit(assembler, line, label);
+		status = parse_string_unit(assembler, itr, label);
 	}
-	else if (is_extern(line))
+	else if (is_extern(itr))
 	{
 		debug("Extern directive detected");
-		parse_extern_unit(assembler, line, label);
+		status = parse_extern_unit(assembler, itr, label);
 	}
 	else
 	{
 		debug("Trying to parse instruction");
-		parse_command_unit(assembler, line, label);
+		status = parse_command_unit(assembler, itr, label);
 	}
-	// todo
+	
+	if (0 != status)
+	{
+		error("Error encountered at line: %lu", fileReaderGetLineNum(fr));
+	}
+
+	return status;
 }
 
 

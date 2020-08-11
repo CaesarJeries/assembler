@@ -69,9 +69,9 @@ LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,
 }
 
 
-LinkedList* linkedListCopy(LinkedList* other)
+LinkedList* linkedListCopy(const LinkedList* other)
 {
-	return other;
+	return (LinkedList*)other;
 }
 
 
