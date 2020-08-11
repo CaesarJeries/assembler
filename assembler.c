@@ -24,6 +24,12 @@ typedef struct
 
 } ParsingUnit;
 
+typedef struct
+{
+	size_t value;
+	char type;
+
+} Symbol;
 
 //static ParsingUnit parsing_unit_handlers[] = {{is_data, parse_data}, {is_string, parse_string}, {is_instruction, parse_instruction}};
 
@@ -41,6 +47,13 @@ struct assembler
 	HashMap* ent_table;
 };
 
+typedef enum
+{
+	DATA_SYMBOL = 'd',
+	EXT_SYMBOL = 'e',
+	CODE_SYMBOL = 'c'
+
+} SymbolType;
 
 static size_t str_hash(void* ptr, size_t size)
 {
@@ -103,12 +116,6 @@ static int str_cmp(void* s1, void* s2)
 	return strcmp(s1, s2);
 }
 
-typedef struct
-{
-	size_t value;
-	char type;
-
-} Symbol;
 
 
 static void* symbolCopy(void* other)
@@ -137,53 +144,30 @@ static void list_free(void* list)
 	linkedListDestroy(list);
 }
 
-
-Assembler* assemblerInit()
+static int add_symbol(Assembler* assembler, const char* label, size_t value, SymbolType type)
 {
-	Assembler* assembler = malloc(sizeof(*assembler));
-	if (assembler)
+	debug("Adding symbol: %s", label);
+	Symbol symbol = {value, type};
+	if (HASH_MAP_SUCCESS != hashMapInsert(assembler->sym_table, label, &symbol))
 	{
-		assembler->data_counter = 0;
-		assembler->inst_counter = 100;
-		
-		HashMapEntryHandlers data_handlers = {int_copy, int_free,
-						      list_copy, list_free};
-
-		assembler->data_table = hashMapInit(int_hash, int_cmp, data_handlers);
-
-		HashMapEntryHandlers symbol_handlers = {str_copy, str_free,
-							symbolCopy, symbolFree};
-		assembler->sym_table = hashMapInit(str_hash, str_cmp, symbol_handlers);
-		
-		HashMapEntryHandlers handlers = {str_copy, str_free,
-						 str_copy, str_free};
-		assembler->ext_table = hashMapInit(str_hash, str_cmp, handlers);
-		assembler->ent_table = hashMapInit(str_hash, str_cmp, handlers);
-		
-		if (!assembler->data_table ||
-		    !assembler->sym_table ||
-		    !assembler->ext_table ||
-		    !assembler->ent_table)
-		{
-			assemblerDestroy(assembler);
-			assembler = NULL;
-		}
+		return -1;
 	}
-
-	return assembler;
+	debug("Symbol successfully added");
+	return 0;
 }
 
 
 static int add_data_symbol(Assembler* assembler, const char* label)
 {
-	Symbol symbol = {assembler->data_counter, 'd'};
-	if (HASH_MAP_SUCCESS != hashMapInsert(assembler->sym_table, label, &symbol))
-	{
-		return -1;
-	}
-	return 0;
+	return add_symbol(assembler, label, assembler->data_counter, DATA_SYMBOL);
+
 }
 
+
+static int add_ext_symbol(Assembler* assembler, const char* label)
+{
+	return add_symbol(assembler, label, 0, EXT_SYMBOL);
+}
 
 static int parse_string_unit(Assembler* assembler, const char* line, const char* label)
 {
@@ -211,6 +195,7 @@ static int parse_string_unit(Assembler* assembler, const char* line, const char*
 	free(string);
 	return 0;
 }
+
 
 
 static int parse_data_unit(Assembler* assembler, const char* line, const char* label)
@@ -252,7 +237,64 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 }
 
 
-static void /* todo: change retval */ parseLine(Assembler* assembler, FileReader* fr, char* line)
+static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)
+{
+	const char* itr = skip_directive(line);
+	itr = skip_whitespace(itr);
+
+	debug("Duplicating extern label");
+	char* ext_label = strdup(itr);
+	
+	if (ext_label)
+	{
+		char* label_itr = ext_label;
+		while (*label_itr && !isspace(*label_itr)) ++label_itr;
+		*label_itr = 0;
+	}
+	
+	return add_ext_symbol(assembler, ext_label);
+}
+
+
+
+Assembler* assemblerInit()
+{
+	Assembler* assembler = malloc(sizeof(*assembler));
+	if (assembler)
+	{
+		assembler->data_counter = 0;
+		assembler->inst_counter = 100;
+		
+		HashMapEntryHandlers data_handlers = {int_copy, int_free,
+						      list_copy, list_free};
+
+		assembler->data_table = hashMapInit(int_hash, int_cmp, data_handlers);
+
+		HashMapEntryHandlers symbol_handlers = {str_copy, str_free,
+							symbolCopy, symbolFree};
+		assembler->sym_table = hashMapInit(str_hash, str_cmp, symbol_handlers);
+		
+		HashMapEntryHandlers handlers = {str_copy, str_free,
+						 str_copy, str_free};
+		assembler->ext_table = hashMapInit(str_hash, str_cmp, handlers);
+		assembler->ent_table = hashMapInit(str_hash, str_cmp, handlers);
+		
+		if (!assembler->data_table ||
+		    !assembler->sym_table ||
+		    !assembler->ext_table ||
+		    !assembler->ent_table)
+		{
+			assemblerDestroy(assembler);
+			assembler = NULL;
+		}
+	}
+
+	return assembler;
+}
+
+
+
+static int parseLine(Assembler* assembler, FileReader* fr, const char* line)
 {
 	debug("Parsing line: %s", line);
 	char* label = NULL;
@@ -273,6 +315,13 @@ static void /* todo: change retval */ parseLine(Assembler* assembler, FileReader
 		debug("String directive detected");
 		parse_string_unit(assembler, line, label);
 	}
+	else if (is_extern(line))
+	{
+		debug("Extern directive detected");
+		parse_extern_unit(assembler, line, label);
+	}
+
+	// todo
 }
 
 
@@ -303,7 +352,6 @@ static int firstPass(Assembler* assembler, FileReader* fr)
 			return ASSEMBLER_FILE_READ_ERR;
 		}
 		parseLine(assembler, fr, line);
-		break;
 	}
 	return 0;
 }

@@ -19,4 +19,5 @@ AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename);
 void assemblerReset(Assembler* assembler);
 void assemblerDestroy(Assembler* assembler);
 
+
 #endif // __ASSEMBLER_H__

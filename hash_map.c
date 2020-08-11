@@ -238,7 +238,7 @@ static HashMapStatus resizeHashMap(HashMap* map)
 }
 
 
-int hashMapInsert(HashMap* map, const void* key, const void* value)
+HashMapStatus hashMapInsert(HashMap* map, const void* key, const void* value)
 {
 	size_t hash = map->key_hash_func(key, map->num_buckets);
 	

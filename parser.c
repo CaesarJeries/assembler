@@ -11,7 +11,7 @@
 #define MAX_DIGIT_COUNT 42
 
 
-static const char* skip_whitespace(const char* expr)
+const char* skip_whitespace(const char* expr)
 {
 	const char* itr = expr;
 	while (*itr && isspace(*itr))
@@ -25,7 +25,7 @@ static const char* skip_whitespace(const char* expr)
 }
 
 
-static const char* skip_directive(const char* expr)
+const char* skip_directive(const char* expr)
 {
 	const char* itr = expr;
 	int directive_found = 0;

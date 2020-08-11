@@ -37,5 +37,4 @@ LinkedListStatus linkedListRemove(LinkedList* list, void* value);
 
 void linkedListDestroy(LinkedList* list);
 
-
 #endif // __LINKED_LIST__
