@@ -4,6 +4,7 @@
 #include <stddef.h>	// size_t
 
 #include "assembler.h"
+#include "command.h"
 #include "file_reader.h"
 #include "grammar.h"
 #include "hash_map.h"
@@ -256,6 +257,21 @@ static int parse_extern_unit(Assembler* assembler, const char* line, const char*
 }
 
 
+static int parse_command_unit(Assembler* assembler, const char* line, const char* label)
+{
+	static char cmd_name[MAX_CMD_SIZE] = {0};
+	static char src_op[MAX_OP_SIZE] = {0};
+	static char dst_op[MAX_OP_SIZE] = {0};
+
+	if (0 != parse_command(line, cmd_name, src_op, dst_op))
+	{
+		error("Failed to parse instruction: %s", line);
+		return -1;
+	}
+		
+	return 0;
+}
+
 
 Assembler* assemblerInit()
 {
@@ -320,7 +336,11 @@ static int parseLine(Assembler* assembler, FileReader* fr, const char* line)
 		debug("Extern directive detected");
 		parse_extern_unit(assembler, line, label);
 	}
-
+	else
+	{
+		debug("Trying to parse instruction");
+		parse_command_unit(assembler, line, label);
+	}
 	// todo
 }
 

@@ -13,13 +13,13 @@
 
 const char* skip_whitespace(const char* expr)
 {
+	assert(expr);
+
 	const char* itr = expr;
 	while (*itr && isspace(*itr))
 	{
 		++itr;
 	}
-	
-	if (!*itr) return expr;
 		
 	return itr;
 }
@@ -75,7 +75,6 @@ const char* search_for_label(const char* line, char** label_dst)
 		++end;
 	}
 	
-	*label_dst = NULL;
 	return line;
 }
 
