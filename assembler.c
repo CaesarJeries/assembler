@@ -15,16 +15,10 @@
 
 #define MAX_FILENAME_LENGTH 128
 #define WORD_SIZE 24
+#define MAX_LABEL_LENGTH 128
 
-typedef int (*line_type_t) (const char*);
-typedef void* (*type_handler_t)(void* params);
+static AssemblerStatus status = ASSEMBLER_SUCCESS;
 
-typedef struct
-{
-	line_type_t type;
-	type_handler_t handler;
-
-} ParsingUnit;
 
 typedef struct
 {
@@ -33,21 +27,6 @@ typedef struct
 
 } Symbol;
 
-//static ParsingUnit parsing_unit_handlers[] = {{is_data, parse_data}, {is_string, parse_string}, {is_instruction, parse_instruction}};
-
-#define ARRAY_SIZE(a) ((size_t)sizeof(a)/sizeof(a[0]))
-
-
-struct assembler
-{
-	size_t data_counter;
-	size_t inst_counter;
-
-	HashMap* data_table;	
-	HashMap* sym_table;
-	HashMap* ext_table;
-	HashMap* ent_table;
-};
 
 typedef enum
 {
@@ -56,6 +35,60 @@ typedef enum
 	CODE_SYMBOL = 'c'
 
 } SymbolType;
+
+
+struct assembler
+{
+	size_t data_counter;
+	size_t inst_counter;
+
+	HashMap* data_table;	
+	HashMap* code_table;
+	HashMap* sym_table;
+	HashMap* ext_table;
+	HashMap* ent_table;
+};
+
+typedef struct
+{
+	char* binary_code;
+	size_t ic;
+	size_t additional_words;
+
+} InstructionEntry;
+
+
+void* inst_entry_copy(const void* other)
+{
+	InstructionEntry* new_entry = malloc(sizeof(*new_entry));
+	InstructionEntry* other_entry = other;
+	if (new_entry)
+	{
+		new_entry->binary_code = strdup(other_entry->binary_code);
+		if (!new_entry->binary_code)
+		{
+			inst_entry_free(new_entry);
+			new_entry = NULL;
+		}
+
+		new_entry->ic = other_entry->ic;
+		new_entry->additional_words = other_entry->additional_words;
+	}
+
+	return new_entry;
+}
+
+
+void inst_entry_free(void* p)
+{
+	InstructionEntry* entry = p;
+	if (entry)
+	{
+		free(entry->binary_code);
+		free(entry);
+	}
+}
+
 
 static size_t str_hash(const void* ptr, size_t size)
 {
@@ -118,8 +151,6 @@ static int str_cmp(const void* s1, const void* s2)
 	return strcmp(s1, s2);
 }
 
-
-
 static void* symbolCopy(const void* other)
 {
 	Symbol* new_symbol = malloc(sizeof(*new_symbol));
@@ -146,6 +177,8 @@ static void list_free(void* list)
 	linkedListDestroy(list);
 }
 
+
+
 static int add_symbol(Assembler* assembler, const char* label, size_t value, SymbolType type)
 {
 	debug("Adding symbol: %s", label);
@@ -158,13 +191,11 @@ static int add_symbol(Assembler* assembler, const char* label, size_t value, Sym
 	return 0;
 }
 
-
 static int add_data_symbol(Assembler* assembler, const char* label)
 {
 	return add_symbol(assembler, label, assembler->data_counter, DATA_SYMBOL);
 
 }
-
 
 static int add_ext_symbol(Assembler* assembler, const char* label)
 {
@@ -199,14 +230,13 @@ static int parse_string_unit(Assembler* assembler, const char* line, const char*
 }
 
 
-
 static int parse_data_unit(Assembler* assembler, const char* line, const char* label)
 {
 	if (label)
 	{
 		if (0 != add_data_symbol(assembler, label))
 		{
-			//error("Failed to add symbol to the symbol table");
+			error("%s", "Failed to add symbol to the symbol table");
 			return -1;
 		}
 		debug("Successfully added new label");
@@ -236,33 +266,163 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 	hashMapInsert(assembler->data_table, &assembler->data_counter, data_list);
 	debug("Elements successfully inserted");
 	assembler->data_counter += list_size;
+	return 0;
 }
 
 
 static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)
 {
-	//todo: handle error case
-	//todo: replace parsing with sscanf calls
 	const char* itr = skip_directive(line);
-	itr = skip_whitespace(itr);
+	static char ext_label[MAX_LABEL_LENGTH] = {0};
+	memset(ext_label, 0, MAX_LABEL_LENGTH);
+	
+	int read_elements = sscanf(itr, " %s ", ext_label);
 
-	debug("Duplicating extern label");
-	char* ext_label = strdup(itr);
-	
-	if (ext_label)
+	if (read_elements < 1)
 	{
-		char* label_itr = ext_label;
-		while (*label_itr && !isspace(*label_itr)) ++label_itr;
-		*label_itr = 0;
+		error("%s", "No label was provided for the extern directive");
+		status = ASSEMBLER_PARSE_ERR;
+		return -1;
 	}
-	
+
 	return add_ext_symbol(assembler, ext_label);
 }
 
 
 
+static char* get_command_obj(const char* command_name,
+			     const char* src_op,
+			     const char* dst_op)
+{
+	const size_t cmd_size = WORD_SIZE + 1;
+	char* result = malloc(cmd_size);
+	if (result)
+	{
+		memset(result, '0', WORD_SIZE);
+		result[WORD_SIZE] = 0;
+		Command cmd_def = get_command_definition(command_name);
+
+		int_to_bin(cmd_def.op_code, result + OP_CODE_OFFSET);
+		int_to_bin(cmd_def.funct, result + FUNCT_OFFSET);
+		result[A_OFFSET] = '1';
+
+		if (cmd_def.has_src)
+		{
+			int_to_bin(get_addr_method(src_op), result + SRC_ADDR_OFFSET);
+			if (is_register(src_op))
+			{
+				int_to_bin(get_register_number(src_op), result + SRC_REG_OFFSET);
+			}
+		}
+		
+		if (cmd_def.has_dst)
+		{
+			int_to_bin(get_addr_method(dst_op), result + DST_ADDR_OFFSET);
+			if (is_register(dst_op))
+			{
+				int_to_bin(get_register_number(dst_op), result + DST_REG_OFFSET);
+			}
+		}
+	}
+	
+	return result;
+}
+
+/*
+void placeholder()
+{
+	char* label = get_label(operand); assert(label);
+	debug("Searching for symbol");
+	Symbol* symbol = hashMapGet(assembler->sym_table, label);
+	if (!symbol)
+	{
+		error("Symbol not found: %s", label);
+		status = ASSEMBLER_MISSING_SYM;
+		return NULL;
+	}
+	debug("Symbol found. Converting value to binary");	
+	int_to_bin(symbol->value, word);
+	free(label);
+}
+*/
+
+static char* resolve_word(Assembler* assembler, const char* operand)
+{
+	AddressingMethod method = get_addr_method(operand);
+	debug("Addressing method for %s: %d", operand, method);
+
+	if (REGISTER_ADDRESSING == method)
+	{
+		debug("No additional words required");
+		return NULL;
+	}
+	
+	char* word = calloc(1, WORD_SIZE + 1);
+	if (!word)
+	{
+		status = ASSEMBLER_MEM_ERR;
+		return NULL;
+	}
+
+	if (IMMEDIATE_ADDRESSING == method)
+	{
+		int value = get_value(operand);
+		int_to_bin(value, word);
+	}
+	
+	return word;
+}
 
 
+
+static LinkedList* get_additional_words(Assembler* assembler,
+					const char* command_name,
+					const char* src_op,
+					const char* dst_op)
+{
+	assert(command_name); assert(src_op); assert(dst_op);
+
+	LinkedList* list = linkedListInit(str_copy, str_cmp, str_free);
+	if (list)
+	{
+		Command cmd_def = get_command_definition(command_name);
+		if (cmd_def.has_src)
+		{
+			debug("Resolving source operand");
+			char* word = resolve_word(assembler, src_op);
+			if (word)
+			{
+				debug("Additional word for the source operand: %s", word);
+				linkedListInsert(list, word);
+				debug("Word inserted to list");
+				free(word);
+			}
+		}
+
+		if (cmd_def.has_dst)
+		{
+			debug("Resolving destination operand");
+			char* word = resolve_word(assembler, dst_op);
+			if (word)
+			{
+				debug("Additional word for the destination operand: %s", word);
+				linkedListInsert(list, word);
+				debug("Word inserted to list");
+				free(word);
+			}
+		}
+	}
+	
+	return list;
+}
+
+
+
+static void add_inst_symbol(Assembler* assembler, const char* label)
+{
+	if (!label) return;
+	return add_symbol(assembler, label, assembler->inst_counter, CODE_SYMBOL);
+}
 
 static int parse_command_unit(Assembler* assembler, const char* line, const char* label)
 {
@@ -270,12 +430,44 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 	static char src_op[MAX_OP_SIZE] = {0};
 	static char dst_op[MAX_OP_SIZE] = {0};
 
+	memset(cmd_name, 0, MAX_CMD_SIZE);
+	memset(src_op, 0, MAX_OP_SIZE);
+	memset(dst_op, 0, MAX_OP_SIZE);
+
 	if (0 != parse_command(line, cmd_name, src_op, dst_op))
 	{
 		error("Failed to parse instruction: %s", line);
 		return -1;
 	}
 
+	add_inst_symbol(assembler, label);
+	char* command = get_command_obj(cmd_name, src_op, dst_op);
+	LinkedList* list = get_additional_words(assembler, cmd_name, src_op, dst_op);
+	if (!command || !list) return -1;
+
+	size_t list_size = linkedListSize(list);
+	debug("Command binary: %s", command);
+	InstructionEntry entry;
+	entry.binary_code = command;
+	entry.ic = assembler->inst_counter;
+	entry.additional_words = list_size;
+	hashMapInsert(assembler->code_table, &assembler->inst_counter, &entry);
+	free(command); command = NULL;
+	++assembler->inst_counter;
+	
+	debug("Instruction requires %lu additional words", list_size);
+	for(size_t i = 0; i < list_size; ++i)
+	{
+		char* word = linkedListGetAt(list, i);
+		debug("Adding word to instruction table: %s", word);
+		entry.binary_code = word;
+		entry.ic = assembler->inst_counter;
+		entry.additional_words = 0;
+		hashMapInsert(assembler->code_table, &assembler->inst_counter, &entry);
+		++assembler->inst_counter;
+	}
+	
+	linkedListDestroy(list);
 	return 0;
 }
 
@@ -289,9 +481,13 @@ Assembler* assemblerInit()
 		assembler->inst_counter = 100;
 		
 		HashMapEntryHandlers data_handlers = {int_copy, int_free,
-						      list_copy, list_free};
+						     list_copy, list_free};
 
 		assembler->data_table = hashMapInit(int_hash, int_cmp, data_handlers);
+		
+		HashMapEntryHandlers inst_handlers = {int_copy, int_free,
+						      inst_entry_copy, inst_entry_free};
+		assembler->code_table = hashMapInit(int_hash, int_cmp, inst_handlers);
 
 		HashMapEntryHandlers symbol_handlers = {str_copy, str_free,
 							symbolCopy, symbolFree};
@@ -302,11 +498,13 @@ Assembler* assemblerInit()
 		assembler->ext_table = hashMapInit(str_hash, str_cmp, handlers);
 		assembler->ent_table = hashMapInit(str_hash, str_cmp, handlers);
 		
-		if (!assembler->data_table ||
+		if (!assembler->code_table ||
+		    !assembler->data_table ||
 		    !assembler->sym_table ||
 		    !assembler->ext_table ||
 		    !assembler->ent_table)
 		{
+			error("%s", "Failed to initialize assembler object");
 			assemblerDestroy(assembler);
 			assembler = NULL;
 		}
@@ -453,6 +651,8 @@ void assemblerReset(Assembler* assembler)
 	assembler->data_counter = 0;
 	assembler->inst_counter = 0;
 
+	hashMapClear(assembler->code_table);
+	hashMapClear(assembler->data_table);
 	hashMapClear(assembler->sym_table);
 	hashMapClear(assembler->ext_table);
 	hashMapClear(assembler->ent_table);
@@ -463,6 +663,8 @@ void assemblerDestroy(Assembler* assembler)
 {
 	if (assembler)
 	{
+		debug("Destroying assembler object");
+		hashMapDestroy(assembler->code_table);
 		hashMapDestroy(assembler->data_table);
 		hashMapDestroy(assembler->sym_table);
 		hashMapDestroy(assembler->ext_table);

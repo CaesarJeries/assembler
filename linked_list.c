@@ -2,6 +2,7 @@
 #include <malloc.h>
 
 #include "linked_list.h"
+#include "logging.h"
 
 typedef struct list_entry
 {
@@ -60,6 +61,7 @@ LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,
 			free(list);
 			return NULL;
 		}
+		
 		list->size = 0;
 		list->value_copy_func = value_copy_func;
 		list->value_cmp_func = value_cmp_func;
@@ -189,16 +191,21 @@ void linkedListDestroy(LinkedList* list)
 {
 	if (list)
 	{
-		ListEntry* curr = list->dummy;
+		debug("Destroying linked list");
+		ListEntry* curr = list->dummy; assert(curr);
+		debug("Iterating elements");
 		while (curr->next)
 		{
+			debug("Freeing data");
 			list->value_free_func(curr->data);
 			curr->data = NULL;
 			ListEntry* temp = curr;
 			curr = curr->next;
+			debug("Freeing node");
 			entryDestroy(temp);
 		}
 
+		debug("Freeing sentinel node");
 		list->value_free_func(curr->data);
 		entryDestroy(curr);
 		free(list);

@@ -3,23 +3,11 @@
 
 #include "command.h"
 #include "logging.h"
+#include "parser.h"
 #include "string.h"
 
 #define ARRAY_SIZE(a) ((size_t) (sizeof(a)/ sizeof(a[0])))
 
-#define ADDR_METHOD_NUM 4
-
-typedef struct
-{
-	int op_code;
-	int funct;
-	const char* name;
-	int has_src;
-	int has_dst;
-	int src_valid_addressing[ADDR_METHOD_NUM];
-	int dst_valid_addressing[ADDR_METHOD_NUM];
-
-} Command;
 
 
 static Command error_command = {-1};
@@ -29,17 +17,17 @@ static Command commands[] = {
 	{0, 0, "mov", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
 	{1, 0, "cmp", 1, 1, {1, 1, 0, 1}, {1, 1, 0, 1}},
 	{2, 1, "add", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
-	{3, 2, "sub", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
+	{2, 2, "sub", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
 
 	{4, 0, "lea", 1, 1, {0, 1, 0, 0}, {0, 1, 0, 1}},
 
 	{5, 1, "clr", 0, 1, {0}, {0, 1, 0, 1}},
-	{6, 2, "not", 0, 1, {0}, {0, 1, 0, 1}},
-	{7, 3, "inc", 0, 1, {0}, {0, 1, 0, 1}},
-	{8, 4, "dec", 0, 1, {0}, {0, 1, 0, 1}},
+	{5, 2, "not", 0, 1, {0}, {0, 1, 0, 1}},
+	{5, 3, "inc", 0, 1, {0}, {0, 1, 0, 1}},
+	{5, 4, "dec", 0, 1, {0}, {0, 1, 0, 1}},
 	{9, 1, "jmp", 0, 1, {0}, {0, 1, 1, 0}},
-	{10, 2, "bne", 0, 1, {0}, {0, 1, 1, 0}},
-	{11, 3, "jsr", 0, 1, {0}, {0, 1, 1, 0}},
+	{9, 2, "bne", 0, 1, {0}, {0, 1, 1, 0}},
+	{9, 3, "jsr", 0, 1, {0}, {0, 1, 1, 0}},
 	{12, 0, "red", 0, 1, {0}, {0, 1, 0, 1}},
 	
 	{13, 0, "prn", 0, 1, {0}, {1, 1, 0, 1}},
@@ -49,20 +37,21 @@ static Command commands[] = {
 };
 
 
-static Command get_command_definition(const char* command_name)
+Command get_command_definition(const char* command_name)
 {
 	debug("Searching for command definition: %s", command_name);
 	for (size_t i = 0; i < ARRAY_SIZE(commands); ++i)
 	{
 		if (0 == strcmp(command_name, commands[i].name))
-		{ return commands[i];
+		{
+			return commands[i];
 		}
 	}
 
 	return error_command;
 }
 
-static int is_register(const char* op)
+int is_register(const char* op)
 {
 	// Valid registers are r0 - r7
 	int is_reg = ('r' == op[0]);
@@ -70,6 +59,29 @@ static int is_register(const char* op)
 	return is_reg;
 }
 
+int get_value(const char* operand)
+{
+	const char* start = operand + 1; // skip '#'
+	const char* end = start + strlen(start);
+	return str_to_int(start, end);
+}
+
+
+char* get_label(const char* operand)
+{
+	operand += (RELATIVE_ADDRESSING == get_addr_method(operand));
+	return strdup(operand);
+}
+
+int get_register_number(const char* operand)
+{
+	if (is_register(operand))
+	{
+		return operand[1] - '0';
+	}
+
+	return -1;
+}
 
 AddressingMethod get_addr_method(const char* operand)
 {
@@ -86,15 +98,15 @@ static int is_addressing_valid(Command cmd,
 			       const char* src_op,
 			       const char* dst_op)
 {
-	int addressing_method = get_addr_method(dst_op);
-	if (0 == cmd.src_valid_addressing[addressing_method])
+	int addressing_method = get_addr_method(src_op);
+	if (cmd.has_src && 0 == cmd.src_valid_addressing[addressing_method])
 	{
 		error("Invalid addressing method for the source operand: %s", src_op);
 		return 0;
 	}
 	
 	addressing_method = get_addr_method(dst_op);
-	if (0 == cmd.dst_valid_addressing[addressing_method])
+	if (cmd.has_dst && 0 == cmd.dst_valid_addressing[addressing_method])
 	{
 		error("Invalid addressing method for the destination operand: %s", dst_op);
 		return 0;
@@ -145,12 +157,15 @@ int parse_command(const char* line,
 	static char src_op[MAX_OP_SIZE] = {0};
 	static char dst_op[MAX_OP_SIZE] = {0};
 
+	memset(command_name, 0, MAX_CMD_SIZE);
+	memset(src_op, 0, MAX_OP_SIZE);
+	memset(dst_op, 0, MAX_OP_SIZE);
+
 	int read_items = sscanf(line,
 			" %s %[^ \t\v,] , %s ",
 			command_name,
 			src_op,
 			dst_op);
-	debug("Cmd: %s. Source Op: %s. Dest Op: %s", command_name, src_op, dst_op);
 	assert(read_items > 0);
 
 	int read_ops = read_items - 1;	// number of operands read from line
@@ -162,7 +177,14 @@ int parse_command(const char* line,
 	strcpy(cmd_name_out, command_name);
 	strcpy(src_op_out, src_op);
 	strcpy(dst_op_out, dst_op);
+	
+	if (1 == read_ops)
+	{
+		*src_op_out = 0;
+		strcpy(dst_op_out, src_op);
+	}
 
+	debug("Cmd: %s. Source Op: %s. Dest Op: %s", command_name, src_op_out, dst_op_out);
 	return 0;
 }
 

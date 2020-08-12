@@ -2,6 +2,44 @@
 
 #include "string.h"
 
+#define AUX_BUFF_SIZE 32
+
+static void reverse(char* str)
+{
+	size_t length = strlen(str);
+	char* left = str;
+	char* right = str + length - 1;
+	while (left < right)
+	{
+		char temp = *left;
+		*left = *right;
+		*right = temp;
+		++left;
+		--right;
+	}
+}
+
+
+
+void int_to_bin(int n, char* dst)
+{
+	static char aux[AUX_BUFF_SIZE] = {0};
+	memset(aux, 0, AUX_BUFF_SIZE);
+	
+	char* itr = aux;
+	while (n)
+	{
+		*itr = '0' + n % 2;
+		n >>= 1;
+		++itr;
+	}
+
+	*itr = 0;
+	reverse(aux);
+	strncpy(dst, aux, strlen(aux));
+}
+
+
 char* strdup(const char* str)
 {
 	size_t len = strlen(str);
@@ -30,20 +68,6 @@ char* strndup(const char* str, size_t size)
 }
 
 
-static void reverse(char* str)
-{
-	size_t length = strlen(str);
-	char* left = str;
-	char* right = str + length - 1;
-	while (left < right)
-	{
-		char temp = *left;
-		*left = *right;
-		*right = temp;
-		++left;
-		--right;
-	}
-}
 
 static int num_digits(int n)
 {

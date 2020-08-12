@@ -1,0 +1,3 @@
+bne &END
+END:	stop
+

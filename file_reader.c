@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
+#include "string.h"
 #include "logging.h"
 #include "file_reader.h"
 #include "grammar.h"
@@ -55,7 +56,11 @@ READ:	line = fgets(dst, MAX_LINE_SIZE + 1, fr->file_ptr);
 		debug("File read error");
 		return FILE_READER_ERROR;
 	}
+	
+	size_t length = strlen(line);
+	if ('\n' == line[length - 1]) line[length - 1] = 0;
 	debug("Successfully read line: %s", line);
+	
 	if (is_comment(line) || is_whitespace(line))
 		goto READ;
 

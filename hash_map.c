@@ -176,6 +176,7 @@ static Entry* findBucketEntry(Bucket* bucket, const void* key, key_cmp_func_t ke
 		{
 			return itr;
 		}
+		itr = itr->next;
 	}
 	return NULL;
 }
@@ -285,13 +286,17 @@ HashMapStatus hashMapInsert(HashMap* map, const void* key, const void* value)
 void* hashMapGet(HashMap* map, const void* key)
 {
 	size_t hash = map->key_hash_func(key, map->num_buckets);
-	Entry* itr = map->buckets[hash]->dummy->next;
+	Bucket* bucket = map->buckets[hash];
+	if (!bucket) return NULL;
+
+	Entry* itr = bucket->dummy->next;
 	while (itr)
 	{
 		if (0 == map->key_cmp_func(key, itr->key))
 		{
 			return itr->value;
 		}
+		itr = itr->next;
 	}
 
 	return NULL;
