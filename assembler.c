@@ -19,6 +19,8 @@
 
 static AssemblerStatus status = ASSEMBLER_SUCCESS;
 
+typedef int (*line_parser_t)(Assembler*, FileReader*, const char*);
+
 
 typedef struct
 {
@@ -32,7 +34,8 @@ typedef enum
 {
 	DATA_SYMBOL = 'd',
 	EXT_SYMBOL = 'e',
-	CODE_SYMBOL = 'c'
+	CODE_SYMBOL = 'c',
+	ENTRY_SYMBOL = 'm'
 
 } SymbolType;
 
@@ -57,11 +60,20 @@ typedef struct
 
 } InstructionEntry;
 
+void inst_entry_free(void* p)
+{
+	InstructionEntry* entry = p;
+	if (entry)
+	{
+		free(entry->binary_code);
+		free(entry);
+	}
+}
 
 void* inst_entry_copy(const void* other)
 {
 	InstructionEntry* new_entry = malloc(sizeof(*new_entry));
-	InstructionEntry* other_entry = other;
+	const InstructionEntry* other_entry = other;
 	if (new_entry)
 	{
 		new_entry->binary_code = strdup(other_entry->binary_code);
@@ -76,17 +88,6 @@ void* inst_entry_copy(const void* other)
 	}
 
 	return new_entry;
-}
-
-
-void inst_entry_free(void* p)
-{
-	InstructionEntry* entry = p;
-	if (entry)
-	{
-		free(entry->binary_code);
-		free(entry);
-	}
 }
 
 
@@ -269,21 +270,28 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 	return 0;
 }
 
-
-static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)
+static char* get_label_from_directive(const char* line)
 {
 	const char* itr = skip_directive(line);
-	static char ext_label[MAX_LABEL_LENGTH] = {0};
-	memset(ext_label, 0, MAX_LABEL_LENGTH);
+	static char label[MAX_LABEL_LENGTH] = {0};
+	memset(label, 0, MAX_LABEL_LENGTH);
 	
-	int read_elements = sscanf(itr, " %s ", ext_label);
+	int read_elements = sscanf(itr, " %s ", label);
 
 	if (read_elements < 1)
 	{
-		error("%s", "No label was provided for the extern directive");
+		error("No label was provided for the directive: %s", line);
 		status = ASSEMBLER_PARSE_ERR;
-		return -1;
+		return NULL;
 	}
+
+	return strdup(label);
+}
+
+static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)
+{
+	char* ext_label = get_label_from_directive(line);
+	if (!ext_label) return -1;
 
 	return add_ext_symbol(assembler, ext_label);
 }
@@ -418,9 +426,9 @@ static LinkedList* get_additional_words(Assembler* assembler,
 
 
 
-static void add_inst_symbol(Assembler* assembler, const char* label)
+static int add_inst_symbol(Assembler* assembler, const char* label)
 {
-	if (!label) return;
+	if (!label) return 0;
 	return add_symbol(assembler, label, assembler->inst_counter, CODE_SYMBOL);
 }
 
@@ -440,7 +448,7 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 		return -1;
 	}
 
-	add_inst_symbol(assembler, label);
+	if (add_inst_symbol(assembler, label)) return -1;
 	char* command = get_command_obj(cmd_name, src_op, dst_op);
 	LinkedList* list = get_additional_words(assembler, cmd_name, src_op, dst_op);
 	if (!command || !list) return -1;
@@ -515,63 +523,92 @@ Assembler* assemblerInit()
 
 
 
-static int parseLine(Assembler* assembler, FileReader* fr, const char* line)
+static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const char* line)
 {
 	debug("Parsing line: %s", line);
 	char* label = NULL;
 	const char* itr = search_for_label(line, &label);
-	int status = 0;	
+	int parse_status = 0;	
 	if (label)
 	{
 		debug("Found label: %s", label);
 	}
+
+	if (is_entry(line)) return 0;
 	
 	if (is_data(itr))
 	{
 		debug("Data directive detected");
-		status = parse_data_unit(assembler, itr, label);
+		parse_status = parse_data_unit(assembler, itr, label);
 	}
 	else if (is_string(itr))
 	{
 		debug("String directive detected");
-		status = parse_string_unit(assembler, itr, label);
+		parse_status = parse_string_unit(assembler, itr, label);
 	}
 	else if (is_extern(itr))
 	{
 		debug("Extern directive detected");
-		status = parse_extern_unit(assembler, itr, label);
+		parse_status = parse_extern_unit(assembler, itr, label);
 	}
 	else
 	{
 		debug("Trying to parse instruction");
-		status = parse_command_unit(assembler, itr, label);
+		parse_status = parse_command_unit(assembler, itr, label);
 	}
 	
-	if (0 != status)
+	if (0 != parse_status)
 	{
 		error("Error encountered at line: %lu", fileReaderGetLineNum(fr));
 	}
-
+	
+	free(label);
 	return status;
 }
 
 
-static int firstPass(Assembler* assembler, FileReader* fr)
+
+
+static int parse_line_second_pass(Assembler* assembler, FileReader* fr, const char* line)
+{
+	if (is_entry(line))
+	{
+		debug("Handling entry directive: %s", line);
+		char* label = get_label_from_directive(line);
+		if (!label) return -1;
+		
+		debug("Looking up symbol: %s", label);
+		Symbol* symbol = hashMapGet(assembler->sym_table, label);
+		if (!symbol)
+		{
+			error("Symbol not found: %s", label);
+			status = ASSEMBLER_MISSING_SYM;
+			return -1;
+		}
+
+		symbol->type = ENTRY_SYMBOL;
+		free(label);
+	}
+
+	return 0;
+}
+
+static int pass(Assembler* assembler, FileReader* fr, line_parser_t parse_line)
 {
 	assert(assembler);
 	assert(fr);
 
-	debug("Starting first pass");
-	FileReaderStatus status = FILE_READER_SUCCESS;
+	debug("Starting pass");
+	FileReaderStatus read_status = FILE_READER_SUCCESS;
 	while (1)
 	{
 		static char line[MAX_LINE_SIZE + 1] = {0};
-		status = fileReaderGetLine(fr, line);
+		read_status = fileReaderGetLine(fr, line);
 		debug("Read line. Checking status.");
-		if (FILE_READER_SUCCESS != status)
+		if (FILE_READER_SUCCESS != read_status)
 		{
 			debug("File reader failed to read line");
-			if (FILE_READER_EOF == status)
+			if (FILE_READER_EOF == read_status)
 			{
 				debug("Reached end of file");
 				return ASSEMBLER_SUCCESS;
@@ -582,11 +619,20 @@ static int firstPass(Assembler* assembler, FileReader* fr)
 			fileReaderDestroy(fr);
 			return ASSEMBLER_FILE_READ_ERR;
 		}
-		parseLine(assembler, fr, line);
+		parse_line(assembler, fr, line);
 	}
 	return 0;
 }
 
+static int firstPass(Assembler* assembler, FileReader* fr)
+{
+	return pass(assembler, fr, parse_line_first_pass);
+}
+
+static int secondPass(Assembler* assembler, FileReader* fr)
+{
+	return pass(assembler, fr, parse_line_second_pass);
+}
 
 static int is_valid_extension(const char* filename)
 {
@@ -601,12 +647,6 @@ static int is_valid_extension(const char* filename)
 
 	// file has no extension, and therefor valid
 	return 1;
-}
-
-
-static void secondPass(Assembler* assembler, FileReader* fr /* this param necessary? */)
-{
-	;
 }
 
 
