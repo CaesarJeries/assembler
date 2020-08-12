@@ -45,9 +45,15 @@ run_test: test
 	$(foreach t, $(TEST_BASENAMES), $(shell echo $(t); $(t) >> $(TEST_LOGFILE)))
 	cat $(TEST_LOGFILE)
 
-.PHONY: all clean test run_test
+
+sub: clean
+	tar -cf assembler.tar `ls -A | grep -v git`
+
+
+.PHONY: all clean test run_test sub
 
 clean:
+	rm -f *.tar
 	rm -f test/end-to-end/*.ent
 	rm -f *.d
 	rm -f *_test

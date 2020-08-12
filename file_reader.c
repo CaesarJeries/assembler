@@ -133,8 +133,8 @@ void fileReaderDestroy(FileReader* fr)
 {
 	if (fr)
 	{
-		free(fr->filename);
-		free(fr->basename);
+		free((void*) fr->filename);
+		free((void*) fr->basename);
 		fclose(fr->file_ptr);
 		free(fr);
 	}
