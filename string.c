@@ -113,3 +113,18 @@ void itoa(char* dst, int orig)
 	reverse(dst);
 }
 
+char* strappend(const char* s1, const char* s2)
+{
+	size_t size1 = strlen(s1);
+	size_t size2 = strlen(s2);
+	size_t total_size = size1 + size2 + 1;
+	char* str = malloc(total_size);
+	if (str)
+	{
+		strcpy(str, s1);
+		strcpy(str + size1, s2);
+		str[total_size] = 0;
+	}
+	
+	return str;
+}

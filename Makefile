@@ -48,9 +48,9 @@ run_test: test
 .PHONY: all clean test run_test
 
 clean:
+	rm -f test/end-to-end/*.ent
 	rm -f *.d
 	rm -f *_test
 	rm -f *.o
 	rm -f $(TARGET)
-	rm -f $(TEST_LOGFILE)
 

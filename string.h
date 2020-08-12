@@ -9,4 +9,6 @@ char* strdup(const char* str);
 char* strndup(const char* str, size_t size);
 void itoa(char* dst, int number);
 
+char* strappend(const char* s1, const char* s2);
+
 #endif // __MY_STRING_H__

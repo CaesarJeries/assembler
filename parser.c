@@ -102,7 +102,6 @@ int parse_int(const char* expr, char** error_msg)
 	debug("Parsing int from %s", itr);
 	char sign = '*'; // initialize with a sentinel value
 
-
 	if ('-' == *itr || '+' == *itr)
 	{
 		sign = *itr;

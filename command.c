@@ -69,7 +69,14 @@ int get_value(const char* operand)
 
 char* get_label(const char* operand)
 {
-	operand += (RELATIVE_ADDRESSING == get_addr_method(operand));
+	AddressingMethod method = get_addr_method(operand);
+	if (IMMEDIATE_ADDRESSING == method ||
+	    REGISTER_ADDRESSING == method)
+	{
+		return NULL;
+	}
+
+	operand += (RELATIVE_ADDRESSING == method);
 	return strdup(operand);
 }
 

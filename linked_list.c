@@ -146,19 +146,15 @@ LinkedListStatus linkedListInsert(LinkedList* list, void* data)
 	void* new_value = list->value_copy_func(data);
 	if (!new_value) return LINKED_LIST_MEM_ERROR;
 	
-	if (found)
+	ListEntry* new_entry = entryCreate();
+	if (!new_entry)
 	{
-		list->value_free_func(found->data);
-		found->data = new_value;
+		list->value_free_func(new_value);
+		return LINKED_LIST_MEM_ERROR;
 	}
-	else
-	{
-		ListEntry* new_entry = entryCreate();
-		if (!new_entry) return LINKED_LIST_MEM_ERROR;
 
-		new_entry->data = new_value;
-		addLast(list, new_entry);
-	}
+	new_entry->data = new_value;
+	addLast(list, new_entry);
 	++list->size;
 	return LINKED_LIST_SUCCESS;
 }
@@ -191,24 +187,23 @@ void linkedListDestroy(LinkedList* list)
 {
 	if (list)
 	{
-		debug("Destroying linked list");
-		ListEntry* curr = list->dummy; assert(curr);
-		debug("Iterating elements");
-		while (curr->next)
-		{
-			debug("Freeing data");
-			list->value_free_func(curr->data);
-			curr->data = NULL;
-			ListEntry* temp = curr;
-			curr = curr->next;
-			debug("Freeing node");
-			entryDestroy(temp);
-		}
-
-		debug("Freeing sentinel node");
-		list->value_free_func(curr->data);
-		entryDestroy(curr);
+		linkedListClear(list);
+		entryDestroy(list->dummy);
 		free(list);
 	}
 }
 
+void linkedListClear(LinkedList* list)
+{
+	ListEntry* curr = list->dummy->next;
+	while (curr)
+	{
+		list->value_free_func(curr->data);
+		curr->data = NULL;
+		ListEntry* temp = curr;
+		curr = curr->next;
+		entryDestroy(temp);
+	}
+
+	list->dummy->next = NULL;
+}

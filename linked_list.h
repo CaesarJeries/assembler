@@ -36,5 +36,6 @@ LinkedListStatus linkedListInsert(LinkedList* list, void* value);
 LinkedListStatus linkedListRemove(LinkedList* list, void* value);
 
 void linkedListDestroy(LinkedList* list);
+void linkedListClear(LinkedList* list);
 
 #endif // __LINKED_LIST__

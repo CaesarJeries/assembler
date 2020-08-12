@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <malloc.h>
+
 #include "hash_map.h"
+#include "logging.h"
 
 static const float DEFAULT_LOAD_FACTOR = 0.75;
 
@@ -198,6 +200,7 @@ static void updateLoadFactor(HashMap* map)
 
 static HashMapStatus resizeHashMap(HashMap* map)
 {
+	debug("resizing map");
 	size_t new_size = 2 * map->num_buckets;
 	HashMapStatus status = HASH_MAP_SUCCESS;
 	Bucket** new_buckets = createBucketArray(new_size, &status);
@@ -249,12 +252,13 @@ HashMapStatus hashMapInsert(HashMap* map, const void* key, const void* value)
 	Entry* bucket_entry = findBucketEntry(map->buckets[hash], key, map->key_cmp_func);
 	if (bucket_entry)
 	{
-		
+		debug("Updating existing entry");	
 		map->handlers.value_free(bucket_entry->value);
 		bucket_entry->value = new_value;
 	}
 	else
 	{
+		debug("Adding new entry");
 		Entry* new_entry = bucketEntryCreate(); 
 		if (!new_entry)
 		{

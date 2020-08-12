@@ -10,17 +10,54 @@
 
 struct file_reader
 {
-	const char* filename;	
+	const char* filename;
+	const char* basename;
 	FILE* file_ptr;
 	size_t curr_line;
 };
+
+static int get_extension_index(const char* filename)
+{
+	const char* itr = filename + strlen(filename) - 1;
+	while (itr > filename)
+	{
+		if ('.' == *itr) return filename - itr;
+		--itr;
+	}
+
+	return -1;
+}
+
+
+static char* resolve_filename(const char* filename)
+{
+	int idx = get_extension_index(filename);
+	if (idx < 0) return strappend(filename, ".as");
+
+	return strdup(filename);
+}
+
+static char* get_base_name(const char* filename)
+{
+	int idx = get_extension_index(filename);
+	if (idx < 0) return strdup(filename);
+
+	return strndup(filename, idx - 1);
+}
+
 
 FileReader* fileReaderInit(const char* filename)
 {
 	FileReader* fr = malloc(sizeof(*fr));
 	if (fr)
 	{
-		fr->filename = filename;
+		fr->filename = resolve_filename(filename);
+		fr->basename = get_base_name(filename);
+		if (!fr->filename || !fr->basename)
+		{
+			return NULL;
+		}
+
 		fr->file_ptr = fopen(filename, "r");
 		if (!fr->file_ptr)
 		{
@@ -74,6 +111,11 @@ const char* fileReaderGetFilename(const FileReader* fr)
 	return fr->filename;
 }
 
+const char* fileReaderGetBasename(const FileReader* fr)
+{
+	return fr->basename;
+}
+
 size_t fileReaderGetLineNum(const FileReader* fr)
 {
 	return fr->curr_line;
@@ -91,6 +133,8 @@ void fileReaderDestroy(FileReader* fr)
 {
 	if (fr)
 	{
+		free(fr->filename);
+		free(fr->basename);
 		fclose(fr->file_ptr);
 		free(fr);
 	}

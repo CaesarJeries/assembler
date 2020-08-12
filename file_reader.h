@@ -23,6 +23,7 @@ FileReader* fileReaderInit(const char* filename);
 FileReaderStatus fileReaderGetLine(FileReader* fr, char* dst);
 
 const char* fileReaderGetFilename(const FileReader* fr);
+const char* fileReaderGetBasename(const FileReader* fr);
 size_t fileReaderGetLineNum(const FileReader* fr);
 
 void fileReaderRewind(FileReader* fr);
