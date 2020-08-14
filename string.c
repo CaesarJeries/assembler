@@ -26,6 +26,13 @@ void int_to_bin(int n, char* dst)
 	static char aux[AUX_BUFF_SIZE] = {0};
 	memset(aux, 0, AUX_BUFF_SIZE);
 	
+	if (0 == n)
+	{
+		dst[0] = '0';
+		dst[1] = 0;
+		return;
+	}
+
 	char* itr = aux;
 	while (n)
 	{
@@ -123,7 +130,7 @@ char* strappend(const char* s1, const char* s2)
 	{
 		strcpy(str, s1);
 		strcpy(str + size1, s2);
-		str[total_size] = 0;
+		str[total_size - 1] = 0;
 	}
 	
 	return str;

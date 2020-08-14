@@ -86,6 +86,7 @@ int str_to_int(const char* str_start, const char* str_end)
 		debug("Handling character: %c", *itr);
 		int digit = *itr - '0';
 		if (0 == digit && 1 == exp) continue;
+		debug("Digit = %d", digit);
 		number *= exp;
 		number += digit;
 		exp = 10;
@@ -102,10 +103,15 @@ int parse_int(const char* expr, char** error_msg)
 	debug("Parsing int from %s", itr);
 	char sign = '*'; // initialize with a sentinel value
 
-	if ('-' == *itr || '+' == *itr)
+	while (!isdigit(*itr))
 	{
-		sign = *itr;
-		debug("Sign found: %c", sign);
+		if ('-' == *itr || '+' == *itr)
+		{
+			sign = *itr;
+			debug("Sign found: %c", sign);
+			++itr;
+			break;
+		}
 		++itr;
 	}
 
@@ -136,7 +142,7 @@ int parse_int(const char* expr, char** error_msg)
 		return 0;
 	}
 
-	debug("number of digits: %d", str_length);
+	debug("number of digits: %lu", str_length);
 	int number = str_to_int(str_start, str_end);
 	if (sign == '-') number *= -1;
 

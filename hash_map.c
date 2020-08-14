@@ -284,6 +284,8 @@ HashMapStatus hashMapInsert(HashMap* map, const void* key, const void* value)
 			return resizeHashMap(map);
 		}
 	}
+	
+	debug("%s", "Entry added");
 	return HASH_MAP_SUCCESS;
 }
 

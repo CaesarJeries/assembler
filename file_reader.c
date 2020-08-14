@@ -21,7 +21,7 @@ static int get_extension_index(const char* filename)
 	const char* itr = filename + strlen(filename) - 1;
 	while (itr > filename)
 	{
-		if ('.' == *itr) return filename - itr;
+		if ('.' == *itr) return itr - filename;
 		--itr;
 	}
 
@@ -58,14 +58,18 @@ FileReader* fileReaderInit(const char* filename)
 			return NULL;
 		}
 
-		fr->file_ptr = fopen(filename, "r");
+		debug("Basename: %s, filename: %s", fr->basename, fr->filename);
+
+		fr->file_ptr = fopen(fr->filename, "r");
 		if (!fr->file_ptr)
 		{
+			error("Failed to open file: %s", fr->filename);
 			fileReaderDestroy(fr);
 			return NULL;
 		}
 		
 		fr->curr_line = 0;
+		debug("File reader initialized");
 	}
 	return fr;
 }
