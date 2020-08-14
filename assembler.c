@@ -5,6 +5,7 @@
 
 #include "assembler.h"
 #include "command.h"
+#include "common.h"
 #include "file_reader.h"
 #include "grammar.h"
 #include "hash_map.h"
@@ -16,7 +17,6 @@
 #define CODE_SEGMENT_START_ADDR 100
 #define DATA_SEGMENT_START_ADDR 0
 #define MAX_FILENAME_LENGTH 128
-#define WORD_SIZE 24
 #define MAX_LABEL_LENGTH 128
 
 static AssemblerStatus status = ASSEMBLER_SUCCESS;
@@ -373,24 +373,19 @@ static void write_value(char* dst, int value, size_t offset)
 	memset(aux, 0, WORD_SIZE + 1);
 
 	debug("Writing value %d at offset %lu", value, offset);
+	
 	int_to_bin(value, aux);
 	
 	char* dst_itr = dst + offset - 1;
-	const char* src_itr = aux + strlen(aux) - 1;
+	size_t num_digits = offset;
+	const char* src_itr = aux + WORD_SIZE - 1;
 
-	debug("Writing %s to the destination word in offset: %lu", aux, offset);	
-	for (size_t i = 0; i < strlen(aux); ++i)
+	debug("Writing %lu digits from %s to the destination word at offset: %lu", num_digits, aux, offset);
+	for (size_t i = 0; i < num_digits; ++i)
 	{
 		*dst_itr = *src_itr;
 		--dst_itr;
 		--src_itr;
-	}
-
-	if (value < 0)
-	{
-		size_t num_bits = offset - strlen(aux);
-		debug("Performing bitwise not on %lu bits", num_bits);
-		memset(dst, '1', num_bits);
 	}
 
 	debug("Final value: %s", dst);
@@ -696,7 +691,8 @@ static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_
 	
 	write_value(dst, value, A_OFFSET);
 	debug("Written value to data word: %s", dst);
-	
+
+	debug("Updating ARE flags");	
 	if (RELATIVE_ADDRESSING == method)
 	{
 		dst[A_OFFSET] = '1';
@@ -708,6 +704,7 @@ static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_
 
 		if (EXT_SYMBOL == symbol->type)
 		{
+			debug("Symbol %s is an external symbol", entry->label);
 			dst[E_OFFSET] = '1';
 		}
 		else
@@ -737,7 +734,8 @@ static int update_code_table(Assembler* assembler)
 		}
 		
 		write_data_word(assembler, entry, symbol->value);
-		debug("Updated word: %s", entry->binary_code);
+		entry = hashMapGet(assembler->code_table, &i);
+		debug("Updated word: %s %s", entry->label, entry->binary_code);
 	}
 
 	return 0;
@@ -902,15 +900,17 @@ static void output_binary_file(Assembler* assembler, const char* basename)
 
 	fprintf(file, "%lu %lu\n", code_size, data_size);
 
+	const unsigned int mask = 0xffffff;	
 	for (size_t i = CODE_SEGMENT_START_ADDR;
 	     i < CODE_SEGMENT_START_ADDR + code_size;
 	     ++i)
 	{
 		InstructionEntry* entry = hashMapGet(assembler->code_table, &i);
 		assert(entry);
-		
-		int value = bin_to_int(entry->binary_code);	
-		fprintf(file, "%07lu %06X\n", i, value);
+		int value = bin_to_int(entry->binary_code);
+		debug("Converted binary to int: %s %s, %d", entry->label, entry->binary_code, value);
+		debug("Writing %07lu %06x to file", i, mask & value);
+		fprintf(file, "%07lu %06x\n", i, mask & value);
 	}
 
 
@@ -926,7 +926,7 @@ static void output_binary_file(Assembler* assembler, const char* basename)
 			char* value_str = linkedListGetAt(data_list, list_itr);
 			int value = bin_to_int(value_str);
 			size_t address = CODE_SEGMENT_START_ADDR + code_size + i;
-			fprintf(file, "%07lu %06X\n", address, value);
+			fprintf(file, "%07lu %06X\n", address, value & mask);
 		}
 	}
 
@@ -1009,6 +1009,7 @@ AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename)
 		update_symbol_addresses(assembler);
 		fileReaderRewind(fr);
 		status = secondPass(assembler, fr);
+		
 		if (ASSEMBLER_SUCCESS == status)
 		{
 			debug("Both passes completed successfully.");

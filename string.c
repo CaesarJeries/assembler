@@ -1,9 +1,8 @@
 #include <malloc.h>
 
+#include "common.h"
 #include "logging.h"
 #include "string.h"
-
-#define AUX_BUFF_SIZE 32
 
 static void reverse(char* str)
 {
@@ -23,18 +22,50 @@ static void reverse(char* str)
 
 static void bitwise_not(char* str)
 {
-	for (size_t i = 0; i < strlen(str); ++i)
+	static char aux[WORD_SIZE + 1] = {0};
+	memset(aux, '1', WORD_SIZE);
+	aux[WORD_SIZE] = 0;
+	
+	size_t str_len = strlen(str);	
+	for (size_t i = 0; i < str_len; ++i)
 	{
 		// bitwise not
 		str[i] = '0' + ('1' - str[i]);
 	}
+	
+	debug("Moving %s of size %lu to index %lu", str, str_len, WORD_SIZE - str_len);
+	memmove(aux + WORD_SIZE - str_len, str, str_len);
+	debug("After memmove: %s", aux);
+	strcpy(str, aux);
 }
 
+static void complement(char* str)
+{
+	bitwise_not(str);
+	
+	size_t str_len = strlen(str);
+	int carry = 0;
+	for (int i = str_len - 1; i >= 0; --i)
+	{
+		char new_value = str[i] + carry;
+		if ('2' == new_value)
+		{
+			carry = 1;
+			new_value = '1';
+		}
+		else
+		{
+			carry = 0;
+		}
+
+		str[i] = new_value;
+	}
+}
 
 void int_to_bin(int n, char* dst)
 {
-	static char aux[AUX_BUFF_SIZE] = {0};
-	memset(aux, 0, AUX_BUFF_SIZE);
+	static char aux[WORD_SIZE + 1] = {0};
+	memset(aux, 0, WORD_SIZE + 1);
 	
 	if (0 == n)
 	{
@@ -59,7 +90,9 @@ void int_to_bin(int n, char* dst)
 
 	if (orig < 0)
 	{
-		bitwise_not(aux);
+		debug("Before complement: %s", aux);
+		complement(aux);
+		debug("After complement: %s", aux);
 	}
 
 	strncpy(dst, aux, strlen(aux));
@@ -86,7 +119,7 @@ int bin_to_int(const char* str)
 	if (str[0] == '1')
 	{
 		char* copy = strdup(str);
-		bitwise_not(copy);
+		complement(copy);
 		int value = get_value(copy);
 		free(copy);
 
