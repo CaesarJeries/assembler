@@ -14,10 +14,10 @@
 #include "string.h"
 
 #define CODE_SEGMENT_START_ADDR 100
+#define DATA_SEGMENT_START_ADDR 0
 #define MAX_FILENAME_LENGTH 128
 #define WORD_SIZE 24
 #define MAX_LABEL_LENGTH 128
-#define MAX_HEX_WORD_SIZE 6
 
 static AssemblerStatus status = ASSEMBLER_SUCCESS;
 
@@ -604,7 +604,7 @@ Assembler* assemblerInit()
 	Assembler* assembler = malloc(sizeof(*assembler));
 	if (assembler)
 	{
-		assembler->data_counter = 0;
+		assembler->data_counter = DATA_SEGMENT_START_ADDR;
 		assembler->inst_counter = CODE_SEGMENT_START_ADDR;
 		
 		HashMapEntryHandlers data_handlers = {int_copy, int_free,
@@ -903,9 +903,18 @@ static void output_binary_file(Assembler* assembler, const char* basename)
 	{
 		InstructionEntry* entry = hashMapGet(assembler->code_table, &i);
 		assert(entry);
+		
+		int value = bin_to_int(entry->binary_code);	
+		fprintf(file, "%07lu %06X\n", i, value);
+	}
 
-		static char hex_repr[MAX_HEX_WORD_SIZE + 1] = {0};
-		memset(hex_repr, 0, MAX_HEX_WORD_SIZE);
+
+	for (size_t i = DATA_SEGMENT_START_ADDR;
+	     i < DATA_SEGMENT_START_ADDR + data_size;
+	     ++i)
+	{
+		InstructionEntry* entry = hashMapGet(assembler->data_table, &i);
+		if (!entry) continue;
 		
 		int value = bin_to_int(entry->binary_code);	
 		fprintf(file, "%07lu %06X\n", i, value);
