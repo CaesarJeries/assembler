@@ -102,10 +102,10 @@ READ:	line = fgets(dst, MAX_LINE_SIZE + 1, fr->file_ptr);
 	if ('\n' == line[length - 1]) line[length - 1] = 0;
 	debug("Successfully read line: %s", line);
 	
+	++fr->curr_line;
 	if (is_comment(line) || is_whitespace(line))
 		goto READ;
 
-	++fr->curr_line;
 	return FILE_READER_SUCCESS;
 }
 
