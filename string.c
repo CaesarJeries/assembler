@@ -42,24 +42,30 @@ static void bitwise_not(char* str)
 static void complement(char* str)
 {
 	bitwise_not(str);
-	
+
 	size_t str_len = strlen(str);
-	int carry = 0;
+	debug("Adding 1 after bitwise not. strlen = %lu", str_len);
+	int carry = 1;
 	for (int i = str_len - 1; i >= 0; --i)
 	{
 		char new_value = str[i] + carry;
+		debug("new value: %c", new_value);
+
 		if ('2' == new_value)
 		{
 			carry = 1;
-			new_value = '1';
+			new_value = '0';
 		}
 		else
 		{
 			carry = 0;
 		}
-
+		
+		debug("new value: %c", new_value);
 		str[i] = new_value;
 	}
+
+	debug("After 2's complement: %s", str);
 }
 
 void int_to_bin(int n, char* dst)
