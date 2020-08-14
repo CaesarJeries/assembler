@@ -42,5 +42,9 @@ void hashMapRemove(HashMap* map, const void* key);
 
 size_t hashMapSize(const HashMap* map);
 
+typedef void (*for_each_func_t) (void* data, void* params);
+
+void hashMapForEach(HashMap* map, for_each_func_t, void* params);
+
 
 #endif // __HASH_MAP_H__

@@ -332,3 +332,21 @@ void hashMapRemove(HashMap* map, const void* key)
 	}
 }
 
+void hashMapForEach(HashMap* map, for_each_func_t func, void* params)
+{
+	for (size_t bucket_itr = 0; bucket_itr < map->num_buckets; ++bucket_itr)
+	{
+		Bucket* bucket = map->buckets[bucket_itr];
+		if (!bucket) continue;
+		
+		Entry* entry_itr = bucket->dummy->next;
+
+		while (entry_itr)
+		{
+			func(entry_itr->value, params);
+			entry_itr = entry_itr->next;
+		}
+	}
+}
+
+

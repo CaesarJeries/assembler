@@ -267,7 +267,8 @@ static int add_symbol(Assembler* assembler, const char* label, size_t value, Sym
 
 static int add_data_symbol(Assembler* assembler, const char* label)
 {
-	return add_symbol(assembler, label, assembler->data_counter, DATA_SYMBOL);
+	size_t location = DATA_SEGMENT_START_ADDR + assembler->data_counter;
+	return add_symbol(assembler, label, location, DATA_SYMBOL);
 
 }
 
@@ -321,19 +322,6 @@ static char* get_label_from_directive(const char* line)
 	return strdup(label);
 }
 
-static int parse_entry_unit(Assembler* assembler, const char* line, const char* label)
-{	
-	char* ent_label = get_label_from_directive(line);
-	if (!ent_label) return -1;
-
-	if (linkedListInsert(assembler->ent_list, ent_label))
-	{
-		return -1;
-	}
-
-	free(ent_label);
-	return 0;
-}
 
 static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)
 {
@@ -371,17 +359,7 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 	}
 
 	size_t list_size = linkedListSize(data_list);
-#ifndef NDEBUG
-	printf("Read %lu data elements\n", list_size);
-	for (size_t i = 0; i < list_size; ++i)
-	{
-		const char* element = linkedListGetAt(data_list, i);
-		printf("Element[%lu]: %s\n", i, element);
-
-	}
-
-#endif	// NDEBUG
-
+	
 	debug("Inserting data elemets to the data table");
 	hashMapInsert(assembler->data_table, &assembler->data_counter, data_list);
 	debug("Elements successfully inserted");
@@ -533,7 +511,9 @@ static LinkedList* get_additional_words(Assembler* assembler,
 static int add_inst_symbol(Assembler* assembler, const char* label)
 {
 	if (!label) return 0;
-	return add_symbol(assembler, label, assembler->inst_counter, CODE_SYMBOL);
+
+	size_t location = CODE_SEGMENT_START_ADDR + assembler->inst_counter;
+	return add_symbol(assembler, label, location, CODE_SYMBOL);
 }
 
 
@@ -676,8 +656,7 @@ static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const cha
 
 	if (is_entry(line))
 	{
-		debug("Entry directive detected");
-		parse_status = parse_entry_unit(assembler, itr, label);
+		return 0;
 	}
 	
 	else if (is_data(itr))
@@ -939,11 +918,16 @@ static void output_binary_file(Assembler* assembler, const char* basename)
 	     i < DATA_SEGMENT_START_ADDR + data_size;
 	     ++i)
 	{
-		InstructionEntry* entry = hashMapGet(assembler->data_table, &i);
-		if (!entry) continue;
-		
-		int value = bin_to_int(entry->binary_code);	
-		fprintf(file, "%07lu %06X\n", i, value);
+		LinkedList* data_list = hashMapGet(assembler->data_table, &i);
+		if (!data_list) continue;
+
+		for (size_t list_itr = 0; list_itr < linkedListSize(data_list); ++list_itr)
+		{
+			char* value_str = linkedListGetAt(data_list, list_itr);
+			int value = bin_to_int(value_str);
+			size_t address = CODE_SEGMENT_START_ADDR + code_size + i;
+			fprintf(file, "%07lu %06X\n", address, value);
+		}
 	}
 
 	free(filename);
@@ -980,6 +964,25 @@ static int update_extern_list(Assembler* assembler)
 }
 
 
+static void update_data_address(void* data, void* params)
+{
+	Assembler* assembler = params;
+	Symbol* symbol = data;
+
+	if (DATA_SYMBOL == symbol->type)
+	{
+		symbol->value += CODE_SEGMENT_START_ADDR + assembler->inst_counter;
+	}
+
+}
+
+static void update_symbol_addresses(Assembler* assembler)
+{
+	hashMapForEach(assembler->sym_table, update_data_address, assembler);
+}
+
+
+
 AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename)
 {
 	debug("Processing file: %s", filename);
@@ -1003,6 +1006,7 @@ AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename)
 
 	if (0 == firstPass(assembler, fr))
 	{
+		update_symbol_addresses(assembler);
 		fileReaderRewind(fr);
 		status = secondPass(assembler, fr);
 		if (ASSEMBLER_SUCCESS == status)
