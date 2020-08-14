@@ -83,10 +83,8 @@ static int get_value(const char* a)
 int bin_to_int(const char* str)
 {
 	debug("Converting binary to int: %s", str);
-	int sign = 1;
 	if (str[0] == '1')
 	{
-		sign = -1;
 		char* copy = strdup(str);
 		bitwise_not(copy);
 		int value = get_value(copy);

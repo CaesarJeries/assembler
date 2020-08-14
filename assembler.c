@@ -142,7 +142,7 @@ static void* ext_entry_copy(const void* other)
 	ExtEntry* new_entry = malloc(sizeof(*new_entry));
 	if (new_entry)
 	{
-		ExtEntry* other_entry = other;
+		const ExtEntry* other_entry = other;
 		new_entry->label = strdup(other_entry->label);
 		if (!new_entry->label)
 		{
@@ -303,6 +303,52 @@ static int parse_string_unit(Assembler* assembler, const char* line, const char*
 	return 0;
 }
 
+static char* get_label_from_directive(const char* line)
+{
+	const char* itr = skip_directive(line);
+	static char label[MAX_LABEL_LENGTH] = {0};
+	memset(label, 0, MAX_LABEL_LENGTH);
+	
+	int read_elements = sscanf(itr, " %s ", label);
+
+	if (read_elements < 1)
+	{
+		error("No label was provided for the directive: %s", line);
+		status = ASSEMBLER_PARSE_ERR;
+		return NULL;
+	}
+
+	return strdup(label);
+}
+
+static int parse_entry_unit(Assembler* assembler, const char* line, const char* label)
+{	
+	char* ent_label = get_label_from_directive(line);
+	if (!ent_label) return -1;
+
+	if (linkedListInsert(assembler->ent_list, ent_label))
+	{
+		return -1;
+	}
+
+	free(ent_label);
+	return 0;
+}
+
+static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)
+{
+	char* ext_label = get_label_from_directive(line);
+	if (!ext_label) return -1;
+
+	int retval = add_ext_symbol(assembler, ext_label);
+	
+	ExtEntry entry = {ext_label, 0};
+	linkedListInsert(assembler->ext_list, &entry);
+
+	free(ext_label);
+	return retval;
+}
+
 
 static int parse_data_unit(Assembler* assembler, const char* line, const char* label)
 {
@@ -341,38 +387,6 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 	debug("Elements successfully inserted");
 	assembler->data_counter += list_size;
 	return 0;
-}
-
-static char* get_label_from_directive(const char* line)
-{
-	const char* itr = skip_directive(line);
-	static char label[MAX_LABEL_LENGTH] = {0};
-	memset(label, 0, MAX_LABEL_LENGTH);
-	
-	int read_elements = sscanf(itr, " %s ", label);
-
-	if (read_elements < 1)
-	{
-		error("No label was provided for the directive: %s", line);
-		status = ASSEMBLER_PARSE_ERR;
-		return NULL;
-	}
-
-	return strdup(label);
-}
-
-static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)
-{
-	char* ext_label = get_label_from_directive(line);
-	if (!ext_label) return -1;
-
-	int retval = add_ext_symbol(assembler, ext_label);
-	
-	ExtEntry entry = {ext_label, 0};
-	linkedListInsert(assembler->ext_list, &entry);
-
-	free(ext_label);
-	return retval;
 }
 
 static void write_value(char* dst, int value, size_t offset)
@@ -652,17 +666,21 @@ static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const cha
 	if (label)
 	{
 		debug("Found label: %s", label);
+		debug("Checking if a keyword was used");
 		if (is_keyword(label))
 		{
 			error("At line: %lu: Used a keyword as label: %s", curr_line, label);
+			return -1;
 		}
-
-		return -1;
 	}
 
-	if (is_entry(line)) return 0;
+	if (is_entry(line))
+	{
+		debug("Entry directive detected");
+		parse_status = parse_entry_unit(assembler, itr, label);
+	}
 	
-	if (is_data(itr))
+	else if (is_data(itr))
 	{
 		debug("Data directive detected");
 		parse_status = parse_data_unit(assembler, itr, label);
@@ -679,7 +697,7 @@ static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const cha
 	}
 	else
 	{
-		debug("Trying to parse instruction");
+		debug("Trying to parse instruction: %s", itr);
 		parse_status = parse_command_unit(assembler, itr, label);
 	}
 	

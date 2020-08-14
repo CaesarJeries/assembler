@@ -5,6 +5,7 @@
 
 #include "linked_list.h"
 #include "logging.h"
+#include "grammar.h"
 #include "string.h"
 #include "parser.h"
 
@@ -74,7 +75,7 @@ const char* search_for_label(const char* line, char** label_dst)
 		++end;
 	}
 	
-	return line;
+	return start;
 }
 
 
@@ -110,38 +111,24 @@ int str_to_int(const char* str_start, const char* str_end)
 
 int parse_int(const char* expr, char** error_msg)
 {
-	const char* itr = skip_whitespace(expr);
-	debug("Parsing int from %s", itr);
-	const char* str_start = itr;
+	debug("Parsing int from %s", expr);
+	
+	int parsed = 0;
+	int scan_status = sscanf(expr, " %d ", &parsed);
 
-	while ((*itr) && isdigit(*itr))
+	if (1 != scan_status)
 	{
-		++itr;
-	}
-
-	if (!*itr)
-	{
-		if (isdigit(*itr) && !isspace(*itr))
+		if (is_whitespace(expr))
 		{
-			*error_msg = "Encountered a non-digit character when parsing an integer";
-			debug("Invalid character: %d", *itr);
-
+			*error_msg = "No characters were given for int";
 			return -1;
 		}
+
+		*error_msg = "Encountered a non-digit character when parsing an integer";
+		return -1;
 	}
 
-	const char* str_end = itr;
-	size_t str_length = str_end - str_start;
-	if (0 == str_length)
-	{
-		*error_msg = "Expected a number but got empty string";
-		return 0;
-	}
-
-	debug("number of digits: %lu", str_length);
-	int number = str_to_int(str_start, str_end);
-
-	return number;
+	return parsed;
 }
 
 

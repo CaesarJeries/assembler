@@ -142,7 +142,6 @@ static void addLast(LinkedList* list, ListEntry* entry)
 LinkedListStatus linkedListInsert(LinkedList* list, void* data)
 {
 	assert(list);
-	ListEntry* found = entryFind(list, data);
 	void* new_value = list->value_copy_func(data);
 	if (!new_value) return LINKED_LIST_MEM_ERROR;
 	

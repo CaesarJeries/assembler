@@ -1,5 +1,7 @@
 #include <stdio.h>
+
 #include "assembler.h"
+#include "logging.h"
 
 
 int main(int argc, const char **argv)
@@ -20,7 +22,7 @@ int main(int argc, const char **argv)
 		++handled_files;
 		const char* input_filename = argv[handled_files];
 		
-		printf("Handling input file: %s\n", input_filename);
+		debug("Handling input file: %s", input_filename);
 		int status = assemblerProcess(assembler, input_filename);
 		if (0 != status)
 		{
