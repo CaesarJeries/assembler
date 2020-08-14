@@ -55,6 +55,8 @@ sub: clean
 clean:
 	rm -f *.tar
 	rm -f test/end-to-end/*.ent
+	rm -f test/end-to-end/*.ext
+	rm -f test/end-to-end/*.ob
 	rm -f *.d
 	rm -f *_test
 	rm -f *.o

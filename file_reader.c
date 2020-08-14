@@ -21,7 +21,7 @@ static int get_extension_index(const char* filename)
 	const char* itr = filename + strlen(filename) - 1;
 	while (itr > filename)
 	{
-		if ('.' == *itr) return itr - filename;
+		if ('.' == *itr) return itr - filename + 1;
 		--itr;
 	}
 

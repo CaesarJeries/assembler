@@ -1,5 +1,6 @@
 #include <malloc.h>
 
+#include "logging.h"
 #include "string.h"
 
 #define AUX_BUFF_SIZE 32
@@ -19,6 +20,15 @@ static void reverse(char* str)
 	}
 }
 
+
+static void bitwise_not(char* str)
+{
+	for (size_t i = 0; i < strlen(str); ++i)
+	{
+		// bitwise not
+		str[i] = '0' + ('1' - str[i]);
+	}
+}
 
 
 void int_to_bin(int n, char* dst)
@@ -49,14 +59,46 @@ void int_to_bin(int n, char* dst)
 
 	if (orig < 0)
 	{
-		for (size_t i = 0; i < strlen(aux); ++i)
-		{
-			// bitwise not
-			aux[i] = '0' + ('1' - aux[i]);
-		}
+		bitwise_not(aux);
 	}
 
 	strncpy(dst, aux, strlen(aux));
+}
+
+
+static int get_value(const char* a)
+{
+	int num = 0;
+	do {
+		int b = (*a=='1');
+		num = (num<<1) | b;
+		a++;
+
+	} while (*a);
+
+	return num;
+}
+
+
+int bin_to_int(const char* str)
+{
+	debug("Converting binary to int: %s", str);
+	int sign = 1;
+	if (str[0] == '1')
+	{
+		sign = -1;
+		char* copy = strdup(str);
+		bitwise_not(copy);
+		int value = get_value(copy);
+		free(copy);
+
+		debug("Value: %d", -value);
+		return -value;
+	}
+
+	int value = get_value(str);
+	debug("Value: %d", value);
+	return value;
 }
 
 

@@ -5,6 +5,7 @@
 #include <string.h>
 
 void int_to_bin(int n, char* dst);
+int bin_to_int(const char* dst);
 char* strdup(const char* str);
 char* strndup(const char* str, size_t size);
 void itoa(char* dst, int number);

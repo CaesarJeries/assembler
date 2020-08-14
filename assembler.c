@@ -17,6 +17,7 @@
 #define MAX_FILENAME_LENGTH 128
 #define WORD_SIZE 24
 #define MAX_LABEL_LENGTH 128
+#define MAX_HEX_WORD_SIZE 6
 
 static AssemblerStatus status = ASSEMBLER_SUCCESS;
 
@@ -854,12 +855,71 @@ static void output_entry_file(Assembler* assembler, const char* basename)
 	fclose(file);
 }
 
+static void output_extern_file(Assembler* assembler, const char* basename)
+{
+	size_t num_entries = linkedListSize(assembler->ext_list);
+	if (0 == num_entries) return;
+
+	char* filename = strappend(basename, ".ext");
+	FILE* file = fopen(filename, "w+");
+	if (!file)
+	{
+		error("Failed to open file: %s", filename);
+		return;
+	}
+
+	for (size_t i = 0; i < num_entries; ++i)
+	{
+		ExtEntry* entry = linkedListGetAt(assembler->ext_list, i);
+		assert(entry);
+
+		fprintf(file, "%s %07lu\n", entry->label, entry->location);
+	}
+
+	free(filename);
+	fclose(file);
+
+}
+
+
+static void output_binary_file(Assembler* assembler, const char* basename)
+{
+	char* filename = strappend(basename, ".ob");
+	FILE* file = fopen(filename, "w+");
+	if (!file)
+	{
+		error("Failed to open file: %s", filename);
+		return;
+	}
+
+	size_t code_size = assembler->inst_counter;
+	size_t data_size = assembler->data_counter;
+
+	fprintf(file, "%lu %lu\n", code_size, data_size);
+
+	for (size_t i = CODE_SEGMENT_START_ADDR;
+	     i < CODE_SEGMENT_START_ADDR + code_size;
+	     ++i)
+	{
+		InstructionEntry* entry = hashMapGet(assembler->code_table, &i);
+		assert(entry);
+
+		static char hex_repr[MAX_HEX_WORD_SIZE + 1] = {0};
+		memset(hex_repr, 0, MAX_HEX_WORD_SIZE);
+		
+		int value = bin_to_int(entry->binary_code);	
+		fprintf(file, "%07lu %06X\n", i, value);
+	}
+
+	free(filename);
+	fclose(file);
+}
 
 static void output_files(Assembler* assembler, const char* basename)
 {
 	output_entry_file(assembler, basename);
-	//output_extern_file(assembler, basename);
-	//output_binary_file(assembler, basename);
+	output_extern_file(assembler, basename);
+	output_binary_file(assembler, basename);
 }
 
 static int update_extern_list(Assembler* assembler)
