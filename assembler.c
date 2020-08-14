@@ -374,12 +374,12 @@ static int parse_extern_unit(Assembler* assembler, const char* line, const char*
 	return retval;
 }
 
-static void write_value(char* dst, size_t value, size_t offset)
+static void write_value(char* dst, int value, size_t offset)
 {
 	static char aux[WORD_SIZE + 1] = {0};
 	memset(aux, 0, WORD_SIZE + 1);
 
-	debug("Writing value %lu at offset %lu", value, offset);
+	debug("Writing value %d at offset %lu", value, offset);
 	int_to_bin(value, aux);
 	
 	char* dst_itr = dst + offset - 1;
@@ -392,6 +392,15 @@ static void write_value(char* dst, size_t value, size_t offset)
 		--dst_itr;
 		--src_itr;
 	}
+
+	if (value < 0)
+	{
+		size_t num_bits = offset - strlen(aux);
+		debug("Performing bitwise not on %lu bits", num_bits);
+		memset(dst, '1', num_bits);
+	}
+
+	debug("Final value: %s", dst);
 }
 
 
@@ -404,7 +413,9 @@ static char* get_command_obj(const char* command_name,
 	{
 		Command cmd_def = get_command_definition(command_name);
 
+		debug("Writing op code");
 		write_value(result, cmd_def.op_code, SRC_ADDR_OFFSET);
+		debug("Writing funct");
 		write_value(result, cmd_def.funct, A_OFFSET);
 		result[A_OFFSET] = '1';
 

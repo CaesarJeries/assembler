@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <ctype.h>	// isdigit, isspace
+#include <stdio.h>
 #include <malloc.h>
 
 #include "linked_list.h"
@@ -81,9 +82,17 @@ int str_to_int(const char* str_start, const char* str_end)
 {
 	int exp = 1;
 	int number = 0;
+	char sign = '+';
 	for (const char* itr = str_start; itr < str_end; ++itr)
 	{
 		debug("Handling character: %c", *itr);
+		if (isspace(*itr)) continue;
+		if ('-' == *itr)
+		{
+			sign = '-';
+			continue;
+		}
+
 		int digit = *itr - '0';
 		if (0 == digit && 1 == exp) continue;
 		debug("Digit = %d", digit);
@@ -91,6 +100,8 @@ int str_to_int(const char* str_start, const char* str_end)
 		number += digit;
 		exp = 10;
 	}
+
+	if ('-' == sign) number *= -1;	
 
 	debug("Parsed %d from string", number);
 	return number;
@@ -101,22 +112,7 @@ int parse_int(const char* expr, char** error_msg)
 {
 	const char* itr = skip_whitespace(expr);
 	debug("Parsing int from %s", itr);
-	char sign = '*'; // initialize with a sentinel value
-
-	while (!isdigit(*itr))
-	{
-		if ('-' == *itr || '+' == *itr)
-		{
-			sign = *itr;
-			debug("Sign found: %c", sign);
-			++itr;
-			break;
-		}
-		++itr;
-	}
-
 	const char* str_start = itr;
-	debug("Parsing absolute value from %s", str_start);
 
 	while ((*itr) && isdigit(*itr))
 	{
@@ -144,7 +140,6 @@ int parse_int(const char* expr, char** error_msg)
 
 	debug("number of digits: %lu", str_length);
 	int number = str_to_int(str_start, str_end);
-	if (sign == '-') number *= -1;
 
 	return number;
 }

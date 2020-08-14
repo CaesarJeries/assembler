@@ -33,6 +33,9 @@ void int_to_bin(int n, char* dst)
 		return;
 	}
 
+	int orig = n;
+	if (n < 0) n *= -1;
+
 	char* itr = aux;
 	while (n)
 	{
@@ -43,6 +46,16 @@ void int_to_bin(int n, char* dst)
 
 	*itr = 0;
 	reverse(aux);
+
+	if (orig < 0)
+	{
+		for (size_t i = 0; i < strlen(aux); ++i)
+		{
+			// bitwise not
+			aux[i] = '0' + ('1' - aux[i]);
+		}
+	}
+
 	strncpy(dst, aux, strlen(aux));
 }
 
