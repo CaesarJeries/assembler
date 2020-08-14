@@ -1,5 +1,6 @@
 #include <ctype.h>	// isspace
 
+#include "command.h"
 #include "string.h"
 #include "grammar.h"
 
@@ -19,11 +20,28 @@ int is_whitespace(const char* expr)
 	return 1;
 }
 
-
-int is_symbol(const char* expr)
+int is_keyword(const char* label)
 {
-	return 0; // todo: implement
+	static char* keywords[] = {
+		"entry",
+		"extern",
+		"data",
+		"string"};
+
+	for (size_t i = 0; i < sizeof(keywords)/sizeof(keywords[0]); ++i)
+	{
+		if (0 == strcmp(label, keywords[i]))
+		{
+			return 1;
+		}
+	}
+
+	if (is_register(label)) return 1;
+	if (is_command(label)) return 1;
+
+	return 0;
 }
+
 
 int is_extern(const char* expr)
 {

@@ -56,5 +56,7 @@ int parse_command(const char* line,
 		  char* src_op_out,
 		  char* dst_op_out);
 
+int is_command(const char* label);
+
 #endif	// __COMMAND_H__
 

@@ -201,3 +201,14 @@ int get_operand_num(const char* command)
 	if (cmd_def.op_code < 0) return -1;
 	return cmd_def.has_src + cmd_def.has_dst;
 }
+
+
+int is_command(const char* label)
+{
+	Command cmd = get_command_definition(label);
+
+	if (cmd.op_code < 0) return 0;
+
+	return 1;
+}
+

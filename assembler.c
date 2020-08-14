@@ -646,10 +646,18 @@ static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const cha
 	debug("Parsing line: %s", line);
 	char* label = NULL;
 	const char* itr = search_for_label(line, &label);
-	int parse_status = 0;	
+	int parse_status = 0;
+	size_t curr_line = fileReaderGetLineNum(fr);
+
 	if (label)
 	{
 		debug("Found label: %s", label);
+		if (is_keyword(label))
+		{
+			error("At line: %lu: Used a keyword as label: %s", curr_line, label);
+		}
+
+		return -1;
 	}
 
 	if (is_entry(line)) return 0;
@@ -677,7 +685,7 @@ static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const cha
 	
 	if (0 != parse_status)
 	{
-		error("Error encountered at line: %lu", fileReaderGetLineNum(fr));
+		error("Error encountered at line: %lu", curr_line);
 	}
 	
 	free(label);
