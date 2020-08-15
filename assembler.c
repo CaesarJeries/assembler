@@ -124,6 +124,20 @@ static void* inst_entry_copy(const void* other)
 	return new_entry;
 }
 
+#ifndef NDEBUG
+static void inst_entry_print(const void* param)
+{
+	InstructionEntry* entry = param;
+
+	printf("Binary code: %s | Label: %s | IC: %lu | AW: %lu | Addr: %d\n",
+		entry->binary_code,
+		entry->label,
+		entry->ic,
+		entry->additional_words,
+		entry->method);
+}
+#endif
+
 static void ext_entry_free(void* e)
 {
 	if (e)
@@ -453,6 +467,7 @@ static char* resolve_word(Assembler* assembler, const char* operand)
 		return NULL;
 	}
 
+	
 	if (IMMEDIATE_ADDRESSING == method)
 	{
 		int value = get_value(operand);
@@ -555,15 +570,22 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 	debug("Instruction requires %lu additional words", list_size);
 	for(size_t i = 0; i < list_size; ++i)
 	{
+		debug("Source op: %s, Dest Op: %s", src_op, dst_op);
 		const char* operand = src_op;
 		char* operand_label = NULL;
-		if (1 == list_size || 1lu == i)
+		if (!(*src_op))
 		{
+			debug("Command takes a single operand: %s", cmd_name);
+			operand = dst_op;
+		}
+		else if (1lu == i)
+		{
+			debug("Handling destination operand");
 			operand = dst_op;
 		}
 		
 		operand_label = get_label(operand);
-		debug("Operand label: %s", operand_label);
+		debug("Operand label for %s: %s", operand, operand_label);
 
 		char* word = linkedListGetAt(list, i);
 		entry.binary_code = word;
@@ -572,14 +594,8 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 		entry.ic = assembler->inst_counter;
 		entry.additional_words = 0;
 		location = CODE_SEGMENT_START_ADDR + assembler->inst_counter;
-		debug("Adding word to instruction table: %s. Label: %s", word, entry.label);
+		debug("Adding word to instruction table: %s. Label: %s. Location: %lu", word, entry.label, location);
 		hashMapInsert(assembler->code_table, &location, &entry);
-		
-		if (operand_label)
-		{
-			ExtEntry ext_ent = {operand_label, location};
-			linkedListInsert(assembler->operand_label_list, &ext_ent);
-		}
 		
 		++assembler->inst_counter;
 		free(operand_label); operand_label = NULL;
@@ -590,6 +606,13 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 	linkedListDestroy(list);
 	return 0;
 }
+
+#ifndef NDEBUG
+static void print_code(Assembler* assembler)
+{
+	hashMapForEach(assembler->code_table, inst_entry_print, NULL);
+}
+#endif
 
 
 Assembler* assemblerInit()
@@ -718,9 +741,15 @@ static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_
 	}
 }
 
+
 static int update_code_table(Assembler* assembler)
 {
 	debug("Updating instruction table");
+#ifndef NDEBUG
+	debug("Before update:");
+	print_code(assembler);
+#endif
+	
 	size_t end = CODE_SEGMENT_START_ADDR + assembler->inst_counter;
 	for (size_t i = CODE_SEGMENT_START_ADDR; i < end; ++i)
 	{
@@ -728,7 +757,7 @@ static int update_code_table(Assembler* assembler)
 		InstructionEntry* entry = hashMapGet(assembler->code_table, &i);
 		assert(entry);
 
-		if (!entry->label) continue;
+		if (!(entry->label)) continue;
 
 		debug("Looking for symbol: %s", entry->label);
 		Symbol* symbol = hashMapGet(assembler->sym_table, entry->label);
@@ -743,6 +772,11 @@ static int update_code_table(Assembler* assembler)
 		entry = hashMapGet(assembler->code_table, &i);
 		debug("Updated word: %s %s", entry->label, entry->binary_code);
 	}
+
+#ifndef NDEBUG
+	debug("After update:");
+	print_code(assembler);
+#endif
 
 	return 0;
 }
@@ -815,10 +849,7 @@ static int firstPass(Assembler* assembler, FileReader* fr)
 
 static int secondPass(Assembler* assembler, FileReader* fr)
 {
-	int result = pass(assembler, fr, parse_line_second_pass);
-	if (0 != result) return -1;
-	
-	return update_code_table(assembler);
+	return pass(assembler, fr, parse_line_second_pass);
 }
 
 static int is_valid_extension(const char* filename)
@@ -919,7 +950,7 @@ static void output_binary_file(Assembler* assembler, const char* basename)
 		fprintf(file, "%07lu %06x\n", i, mask & value);
 	}
 
-
+/*
 	for (size_t i = DATA_SEGMENT_START_ADDR;
 	     i < DATA_SEGMENT_START_ADDR + data_size;
 	     ++i)
@@ -935,7 +966,7 @@ static void output_binary_file(Assembler* assembler, const char* basename)
 			fprintf(file, "%07lu %06X\n", address, value & mask);
 		}
 	}
-
+*/
 	free(filename);
 	fclose(file);
 }
@@ -1014,9 +1045,27 @@ AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename)
 
 	if (0 == firstPass(assembler, fr))
 	{
-		update_symbol_addresses(assembler);
+		status = update_code_table(assembler);
 		fileReaderRewind(fr);
-		status = secondPass(assembler, fr);
+
+		debug("After table update");	
+		print_code(assembler);
+
+		if (ASSEMBLER_SUCCESS == status)
+		{
+			update_symbol_addresses(assembler);
+		}
+	
+		debug("After symbol addresses update");	
+		print_code(assembler);
+
+		if (ASSEMBLER_SUCCESS == status)
+		{
+			status = secondPass(assembler, fr);
+		}
+		
+		debug("After second pass");	
+		print_code(assembler);
 		
 		if (ASSEMBLER_SUCCESS == status)
 		{
