@@ -274,7 +274,7 @@ static char* get_empty_word(void)
 
 static int add_symbol(Assembler* assembler, const char* label, size_t value, SymbolType type)
 {
-	debug("Adding symbol: %s", label);
+	debug("Adding symbol: %s with value %lu", label, value);
 	Symbol symbol = {value, type};
 	if (HASH_MAP_SUCCESS != hashMapInsert(assembler->sym_table, label, &symbol))
 	{
@@ -400,13 +400,14 @@ static void write_value(char* dst, int value, size_t offset)
 
 	if (value < 0)
 	{
-		start_idx = WORD_SIZE - offset - 1;
+		start_idx = WORD_SIZE - offset;
 		count = offset;
 	}
 	
 	debug("Start idx: %lu, count: %lu", start_idx, count);
 	debug("Destination start index: %lu", offset - count);
 	strncpy(dst + offset - count, aux + start_idx, count);
+	debug("After copy: %s", dst);
 }
 
 
@@ -578,7 +579,7 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 			debug("Command takes a single operand: %s", cmd_name);
 			operand = dst_op;
 		}
-		else if (1lu == i)
+		else if (1lu == i || REGISTER_ADDRESSING == get_addr_method(src_op))
 		{
 			debug("Handling destination operand");
 			operand = dst_op;
@@ -766,10 +767,21 @@ static int update_code_table(Assembler* assembler)
 			error("Symbol not found: %s", entry->label);
 			return -1;
 		}
+		
+		if (RELATIVE_ADDRESSING == entry->method)
+		{
+			size_t cmd_location = CODE_SEGMENT_START_ADDR + entry->ic;
+			int diff = symbol->value - cmd_location;
 
-		debug("Writing data word %lu to location of %s", symbol->value, entry->label);	
-		write_data_word(assembler, entry, symbol->value);
-		entry = hashMapGet(assembler->code_table, &i);
+			debug("Writing relative address %d to location of %s", diff, entry->label);	
+			write_data_word(assembler, entry, diff);
+		}
+		else
+		{
+			debug("Writing data word %lu to location of %s", symbol->value, entry->label);	
+			write_data_word(assembler, entry, symbol->value);
+		}
+
 		debug("Updated word: %s %s", entry->label, entry->binary_code);
 	}
 
@@ -1045,17 +1057,14 @@ AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename)
 
 	if (0 == firstPass(assembler, fr))
 	{
+		update_symbol_addresses(assembler);
 		status = update_code_table(assembler);
+
 		fileReaderRewind(fr);
 
 		debug("After table update");	
 		print_code(assembler);
 
-		if (ASSEMBLER_SUCCESS == status)
-		{
-			update_symbol_addresses(assembler);
-		}
-	
 		debug("After symbol addresses update");	
 		print_code(assembler);
 
