@@ -78,6 +78,7 @@ typedef struct
 
 } ExtEntry;
 
+
 static void inst_entry_free(void* p)
 {
 	InstructionEntry* entry = p;
@@ -933,22 +934,25 @@ static void output_extern_file(Assembler* assembler, const char* basename)
 
 }
 
-
-static void output_binary_file(Assembler* assembler, const char* basename)
+static int is_str(const char* value_str)
 {
-	char* filename = strappend(basename, ".ob");
-	FILE* file = fopen(filename, "w+");
-	if (!file)
+	while (*value_str)
 	{
-		error("Failed to open file: %s", filename);
-		return;
+		if (!isdigit(*value_str))
+		{
+			if (*value_str != '+' || *value_str != '-')
+			{
+				return 1;
+			}
+		}
+		++value_str;
 	}
+	return 0;
+}
 
+static void output_code_segment(Assembler* assembler, FILE* file)
+{
 	size_t code_size = assembler->inst_counter;
-	size_t data_size = assembler->data_counter;
-
-	fprintf(file, "%lu %lu\n", code_size, data_size);
-
 	const unsigned int mask = 0xffffff;	
 	for (size_t i = CODE_SEGMENT_START_ADDR;
 	     i < CODE_SEGMENT_START_ADDR + code_size;
@@ -961,24 +965,72 @@ static void output_binary_file(Assembler* assembler, const char* basename)
 		debug("Writing %07lu %06x to file", i, mask & value);
 		fprintf(file, "%07lu %06x\n", i, mask & value);
 	}
+}
 
-/*
-	for (size_t i = DATA_SEGMENT_START_ADDR;
-	     i < DATA_SEGMENT_START_ADDR + data_size;
-	     ++i)
+
+static void output_data_segment(Assembler* assembler, FILE* file)
+{
+	size_t code_size = assembler->inst_counter;
+	size_t data_size = assembler->data_counter;
+	
+	const unsigned int mask = 0xffffff;	
+	
+	size_t address = CODE_SEGMENT_START_ADDR + code_size;
+	
+	for (size_t i = 0; i < data_size; ++i)
 	{
 		LinkedList* data_list = hashMapGet(assembler->data_table, &i);
 		if (!data_list) continue;
-
+		
+		debug("Found data list at %lu", i);
 		for (size_t list_itr = 0; list_itr < linkedListSize(data_list); ++list_itr)
 		{
+			const unsigned int mask = 0xffffff;	
 			char* value_str = linkedListGetAt(data_list, list_itr);
-			int value = bin_to_int(value_str);
-			size_t address = CODE_SEGMENT_START_ADDR + code_size + list_itr;
-			fprintf(file, "%07lu %06X\n", address, value & mask);
+			if (!is_str(value_str))
+			{
+				debug("Writing data to file: %s", value_str);
+				int value = bin_to_int(value_str);
+				debug("Writing %07lu %06x to file", address, mask & value);
+				fprintf(file, "%07lu %06x\n", address, value & mask);
+				++address;
+			}
+			else
+			{
+				debug("Writing string to file: %s", value_str);
+				const char* itr = value_str;
+				while (*itr)
+				{
+					int value = *itr;
+					debug("Writing %07lu %06x to file", address, mask & value);
+					fprintf(file, "%07lu %06x\n", address, value & mask);
+					++itr;
+					++address;
+				}
+
+			}
 		}
 	}
-*/
+}
+
+
+static void output_binary_file(Assembler* assembler, const char* basename)
+{
+	char* filename = strappend(basename, ".ob");
+	FILE* file = fopen(filename, "w+");
+	if (!file)
+	{
+		error("Failed to open file: %s", filename);
+		return;
+	}
+
+	size_t data_size = assembler->data_counter;
+	size_t code_size = assembler->inst_counter;
+
+	fprintf(file, "%lu %lu\n", code_size, data_size);
+	output_code_segment(assembler, file);
+	output_data_segment(assembler, file);
+
 	free(filename);
 	fclose(file);
 }

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
+#include "common.h"
 #include "linked_list.h"
 #include "logging.h"
 #include "grammar.h"
@@ -217,7 +218,9 @@ LinkedList* parse_data(const char* expr, char** error)
 	while (NULL != token)
 	{
 		debug("Handling token: %s", token);
-		static char int_repr[MAX_DIGIT_COUNT] = {0};
+		static char int_repr[WORD_SIZE + 1] = {0};
+		memset(int_repr, 0, WORD_SIZE + 1);
+
 		int value = parse_int(token, error);
 		if (*error != NULL)
 		{
@@ -227,7 +230,7 @@ LinkedList* parse_data(const char* expr, char** error)
 		}
 		else
 		{
-			itoa(int_repr, value);
+			int_to_bin(value, int_repr);
 			debug("Successfully parsed value: %d", value);
 			if (LINKED_LIST_SUCCESS != linkedListInsert(list, int_repr))
 			{
