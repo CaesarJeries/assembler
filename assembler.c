@@ -372,58 +372,27 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 	return 0;
 }
 
-static void write_value(char* dst, int value, size_t offset, int num_digits)
+
+static void write_value(char* dst, int value, size_t offset)
 {
 	static char aux[WORD_SIZE + 1] = {0};
 	memset(aux, 0, WORD_SIZE + 1);
 
-	debug("Writing value %d at offset %lu", value, offset);
-	
-	int_to_bin(value, aux);
-
-	char* src_itr = aux + WORD_SIZE - 1;
-	if (num_digits < 0)
-	{
-		num_digits = strlen(aux);
-		src_itr = aux + strlen(aux) - 1;
-	}
-	
-	char* dst_itr = dst + offset - 1;
-
-	debug("Writing %lu digits from %s to the destination word at offset: %lu", num_digits, aux, offset);
-	for (size_t i = 0; i < num_digits; ++i)
-	{
-		*dst_itr = *src_itr;
-		--dst_itr;
-		--src_itr;
-	}
-
-	debug("Final value: %s", dst);
-}
-
-static void write_command_section(char* dst, int value, size_t offset)
-{
-	static char aux[WORD_SIZE + 1] = {0};
-	memset(aux, 0, WORD_SIZE + 1);
-
-	debug("Writing command section %d at offset %lu", value, offset);
-	
+	debug("Writing value %d at offset %lu", value, offset);	
 	int_to_bin(value, aux);
 	
-	char* dst_itr = dst + offset - 1;
-	size_t num_digits = strlen(aux);
-	const char* src_itr = aux + WORD_SIZE - 1;
+	size_t start_idx = 0;
+	size_t count = strlen(aux);
 
-	debug("Writing %lu digits from %s to the destination word at offset: %lu", num_digits, aux, offset);
-	for (size_t i = 0; i < num_digits; ++i)
+	if (value < 0)
 	{
-		*dst_itr = *src_itr;
-		--dst_itr;
-		--src_itr;
+		start_idx = WORD_SIZE - offset - 1;
+		count = offset;
 	}
-
-	debug("Final value: %s", dst);
-
+	
+	debug("Start idx: %lu, count: %lu", start_idx, count);
+	debug("Destination start index: %lu", offset - count);
+	strncpy(dst + offset - count, aux + start_idx, count);
 }
 
 
@@ -437,26 +406,26 @@ static char* get_command_obj(const char* command_name,
 		Command cmd_def = get_command_definition(command_name);
 
 		debug("Writing op code");
-		write_value(result, cmd_def.op_code, SRC_ADDR_OFFSET, -1);
+		write_value(result, cmd_def.op_code, SRC_ADDR_OFFSET);
 		debug("Writing funct");
-		write_value(result, cmd_def.funct, A_OFFSET, -1);
+		write_value(result, cmd_def.funct, A_OFFSET);
 		result[A_OFFSET] = '1';
 
 		if (cmd_def.has_src)
 		{
-			write_value(result, get_addr_method(src_op), SRC_REG_OFFSET, -1);
+			write_value(result, get_addr_method(src_op), SRC_REG_OFFSET);
 			if (is_register(src_op))
 			{
-				write_value(result, get_register_number(src_op), DST_ADDR_OFFSET, -1);
+				write_value(result, get_register_number(src_op), DST_ADDR_OFFSET);
 			}
 		}
 		
 		if (cmd_def.has_dst)
 		{
-			write_value(result, get_addr_method(dst_op), DST_REG_OFFSET, -1);
+			write_value(result, get_addr_method(dst_op), DST_REG_OFFSET);
 			if (is_register(dst_op))
 			{
-				write_value(result, get_register_number(dst_op), FUNCT_OFFSET, -1);
+				write_value(result, get_register_number(dst_op), FUNCT_OFFSET);
 			}
 		}
 	}
@@ -487,7 +456,7 @@ static char* resolve_word(Assembler* assembler, const char* operand)
 	if (IMMEDIATE_ADDRESSING == method)
 	{
 		int value = get_value(operand);
-		write_value(word, value, A_OFFSET, A_OFFSET);
+		write_value(word, value, A_OFFSET);
 		word[A_OFFSET] = '1';
 	}
 	
@@ -724,7 +693,7 @@ static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_
 	char* dst = entry->binary_code;
 	AddressingMethod method = entry->method;
 	
-	write_value(dst, value, A_OFFSET, A_OFFSET);
+	write_value(dst, value, A_OFFSET);
 	debug("Written value to data word: %s", dst);
 
 	debug("Updating ARE flags");	
@@ -755,6 +724,7 @@ static int update_code_table(Assembler* assembler)
 	size_t end = CODE_SEGMENT_START_ADDR + assembler->inst_counter;
 	for (size_t i = CODE_SEGMENT_START_ADDR; i < end; ++i)
 	{
+		debug("Handling entry at %lu", i);
 		InstructionEntry* entry = hashMapGet(assembler->code_table, &i);
 		assert(entry);
 
@@ -767,7 +737,8 @@ static int update_code_table(Assembler* assembler)
 			error("Symbol not found: %s", entry->label);
 			return -1;
 		}
-		
+
+		debug("Writing data word %lu to location of %s", symbol->value, entry->label);	
 		write_data_word(assembler, entry, symbol->value);
 		entry = hashMapGet(assembler->code_table, &i);
 		debug("Updated word: %s %s", entry->label, entry->binary_code);
@@ -1003,16 +974,18 @@ static void update_data_address(void* data, void* params)
 {
 	Assembler* assembler = params;
 	Symbol* symbol = data;
-
+	
 	if (DATA_SYMBOL == symbol->type)
 	{
 		symbol->value += CODE_SEGMENT_START_ADDR + assembler->inst_counter;
+		debug("Updated symbol value: %lu", symbol->value);
 	}
 
 }
 
 static void update_symbol_addresses(Assembler* assembler)
 {
+	debug("Updating symbol addresses");
 	hashMapForEach(assembler->sym_table, update_data_address, assembler);
 }
 
