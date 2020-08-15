@@ -8,3 +8,4 @@ main
 include
 lib
 *.txt
+*.tar
