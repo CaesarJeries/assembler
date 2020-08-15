@@ -102,6 +102,8 @@ void int_to_bin(int n, char* dst)
 	}
 
 	strncpy(dst, aux, strlen(aux));
+
+	debug("int_to_bin: final value: %s", dst);
 }
 
 

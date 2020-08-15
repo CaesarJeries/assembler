@@ -19,6 +19,11 @@
 #define MAX_FILENAME_LENGTH 128
 #define MAX_LABEL_LENGTH 128
 
+#define OP_CODE_LEN 6
+#define FUNCT_LEN 5
+#define REG_NUM_LEN 3
+#define ADDR_METHOD_LEN 2
+
 static AssemblerStatus status = ASSEMBLER_SUCCESS;
 
 typedef int (*line_parser_t)(Assembler*, FileReader*, const char*);
@@ -367,7 +372,7 @@ static int parse_data_unit(Assembler* assembler, const char* line, const char* l
 	return 0;
 }
 
-static void write_value(char* dst, int value, size_t offset)
+static void write_value(char* dst, int value, size_t offset, int num_digits)
 {
 	static char aux[WORD_SIZE + 1] = {0};
 	memset(aux, 0, WORD_SIZE + 1);
@@ -375,9 +380,38 @@ static void write_value(char* dst, int value, size_t offset)
 	debug("Writing value %d at offset %lu", value, offset);
 	
 	int_to_bin(value, aux);
+
+	char* src_itr = aux + WORD_SIZE - 1;
+	if (num_digits < 0)
+	{
+		num_digits = strlen(aux);
+		src_itr = aux + strlen(aux) - 1;
+	}
 	
 	char* dst_itr = dst + offset - 1;
-	size_t num_digits = offset;
+
+	debug("Writing %lu digits from %s to the destination word at offset: %lu", num_digits, aux, offset);
+	for (size_t i = 0; i < num_digits; ++i)
+	{
+		*dst_itr = *src_itr;
+		--dst_itr;
+		--src_itr;
+	}
+
+	debug("Final value: %s", dst);
+}
+
+static void write_command_section(char* dst, int value, size_t offset)
+{
+	static char aux[WORD_SIZE + 1] = {0};
+	memset(aux, 0, WORD_SIZE + 1);
+
+	debug("Writing command section %d at offset %lu", value, offset);
+	
+	int_to_bin(value, aux);
+	
+	char* dst_itr = dst + offset - 1;
+	size_t num_digits = strlen(aux);
 	const char* src_itr = aux + WORD_SIZE - 1;
 
 	debug("Writing %lu digits from %s to the destination word at offset: %lu", num_digits, aux, offset);
@@ -389,6 +423,7 @@ static void write_value(char* dst, int value, size_t offset)
 	}
 
 	debug("Final value: %s", dst);
+
 }
 
 
@@ -402,26 +437,26 @@ static char* get_command_obj(const char* command_name,
 		Command cmd_def = get_command_definition(command_name);
 
 		debug("Writing op code");
-		write_value(result, cmd_def.op_code, SRC_ADDR_OFFSET);
+		write_value(result, cmd_def.op_code, SRC_ADDR_OFFSET, -1);
 		debug("Writing funct");
-		write_value(result, cmd_def.funct, A_OFFSET);
+		write_value(result, cmd_def.funct, A_OFFSET, -1);
 		result[A_OFFSET] = '1';
 
 		if (cmd_def.has_src)
 		{
-			write_value(result, get_addr_method(src_op), SRC_REG_OFFSET);
+			write_value(result, get_addr_method(src_op), SRC_REG_OFFSET, -1);
 			if (is_register(src_op))
 			{
-				write_value(result, get_register_number(src_op), DST_ADDR_OFFSET);
+				write_value(result, get_register_number(src_op), DST_ADDR_OFFSET, -1);
 			}
 		}
 		
 		if (cmd_def.has_dst)
 		{
-			write_value(result, get_addr_method(dst_op), DST_REG_OFFSET);
+			write_value(result, get_addr_method(dst_op), DST_REG_OFFSET, -1);
 			if (is_register(dst_op))
 			{
-				write_value(result, get_register_number(dst_op), FUNCT_OFFSET);
+				write_value(result, get_register_number(dst_op), FUNCT_OFFSET, -1);
 			}
 		}
 	}
@@ -452,7 +487,7 @@ static char* resolve_word(Assembler* assembler, const char* operand)
 	if (IMMEDIATE_ADDRESSING == method)
 	{
 		int value = get_value(operand);
-		write_value(word, value, A_OFFSET);
+		write_value(word, value, A_OFFSET, A_OFFSET);
 		word[A_OFFSET] = '1';
 	}
 	
@@ -689,7 +724,7 @@ static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_
 	char* dst = entry->binary_code;
 	AddressingMethod method = entry->method;
 	
-	write_value(dst, value, A_OFFSET);
+	write_value(dst, value, A_OFFSET, A_OFFSET);
 	debug("Written value to data word: %s", dst);
 
 	debug("Updating ARE flags");	
@@ -925,7 +960,7 @@ static void output_binary_file(Assembler* assembler, const char* basename)
 		{
 			char* value_str = linkedListGetAt(data_list, list_itr);
 			int value = bin_to_int(value_str);
-			size_t address = CODE_SEGMENT_START_ADDR + code_size + i;
+			size_t address = CODE_SEGMENT_START_ADDR + code_size + list_itr;
 			fprintf(file, "%07lu %06X\n", address, value & mask);
 		}
 	}
