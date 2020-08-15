@@ -28,23 +28,67 @@ typedef enum
 } HashMapStatus;
 
 
+/**
+ * Initializes an empty hash table.
+ * In case of a memory allocation error, NULL is returned.
+ **/
 HashMap* hashMapInit(key_hash_func_t key_hash_func,
 		     key_cmp_func_t key_cmp_func,
 	       	     HashMapEntryHandlers handlers);
 
+/**
+ * Removes all elements from the given map.
+ **/
 void hashMapClear(HashMap* map);
+
+/**
+ * Frees the given map object, and all elements contained in it.
+ * Passing NULL has no effect.
+ **/
 void hashMapDestroy(HashMap* map);
 
+
+/**
+ * Inserts the key/value pair to the given map.
+ * The values are copied by value using the functions that were passed to
+ * hashMapInit.
+ * 
+ * If key already exists, its value is updated.
+ * In case of a memroy allocation error, HASH_MAP_MEM_ERR is returned.
+ * On success, HASH_MAP_SUCCESS is returned.
+ **/
 HashMapStatus hashMapInsert(HashMap* map, const void* key, const void* value);
+
+/**
+ * Checks whether the given map contains key.
+ * Returns 1 if true, and 0 otherwise.
+ **/
 int hashMapContains(const HashMap* map, const void* key);
+
+/**
+ * Returns a reference to the value corresponding to the requested key.
+ * If key doesn't exist, NULL is returned.
+ **/
 void* hashMapGet(HashMap* map, const void* key);
+
+/**
+ * Removes a key/value pair from the map.
+ * This function has no effect if key doesn't exist
+ **/
 void hashMapRemove(HashMap* map, const void* key);
 
+
+/**
+ * Returns the size of the given map.
+ **/
 size_t hashMapSize(const HashMap* map);
 
 typedef void (*for_each_func_t) (void* data, void* params);
 
-void hashMapForEach(HashMap* map, for_each_func_t, void* params);
+/**
+ * Applies func to every element in the map.
+ **/
+void hashMapForEach(HashMap* map, for_each_func_t func, void* params);
 
 
 #endif // __HASH_MAP_H__

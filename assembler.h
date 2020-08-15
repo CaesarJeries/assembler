@@ -17,9 +17,28 @@ typedef enum
 
 typedef struct assembler Assembler;
 
+/**
+ * Initializes a new assembler object.
+ * In case of a memory allocation error, NULL is returned
+ **/
 Assembler* assemblerInit();
+
+/**
+ * Process the given file, and output the binray, extern, and entry files.
+ * In case of an error, no files are written, and and appropriate status is
+ * returned.
+ **/
 AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename);
+
+/**
+ * Resets the assembler state.
+ **/
 void assemblerReset(Assembler* assembler);
+
+/**
+ * Frees the given assembler object.
+ * Passing NULL has no effect
+ **/
 void assemblerDestroy(Assembler* assembler);
 
 
