@@ -4,7 +4,7 @@ INCLUDE_DIR=.\
 	    test\
 	    $()
 
-CFLAGS=-Wall -ansi -pedantic -std=c99 #-DNDEBUG
+CFLAGS=-Wall -ansi -pedantic -std=c99 -DNDEBUG
 CFLAGS += $(addprefix -iquote, $(INCLUDE_DIR))
 CC=gcc
 

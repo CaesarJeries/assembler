@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <malloc.h>
 #include <stddef.h>	// size_t
@@ -772,9 +773,10 @@ static int update_code_table(Assembler* assembler)
 		if (RELATIVE_ADDRESSING == entry->method)
 		{
 			size_t cmd_location = CODE_SEGMENT_START_ADDR + entry->ic;
-			int diff = symbol->value - cmd_location;
+			int diff = symbol->value - cmd_location + 1;
 
-			debug("Writing relative address %d to location of %s", diff, entry->label);	
+			debug("Writing relative address %d to location of %s", diff, entry->label);
+			entry->method = RELATIVE_ADDRESSING;
 			write_data_word(assembler, entry, diff);
 		}
 		else
@@ -972,9 +974,6 @@ static void output_data_segment(Assembler* assembler, FILE* file)
 {
 	size_t code_size = assembler->inst_counter;
 	size_t data_size = assembler->data_counter;
-	
-	const unsigned int mask = 0xffffff;	
-	
 	size_t address = CODE_SEGMENT_START_ADDR + code_size;
 	
 	for (size_t i = 0; i < data_size; ++i)
@@ -1114,19 +1113,10 @@ AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename)
 
 		fileReaderRewind(fr);
 
-		debug("After table update");	
-		print_code(assembler);
-
-		debug("After symbol addresses update");	
-		print_code(assembler);
-
 		if (ASSEMBLER_SUCCESS == status)
 		{
 			status = secondPass(assembler, fr);
 		}
-		
-		debug("After second pass");	
-		print_code(assembler);
 		
 		if (ASSEMBLER_SUCCESS == status)
 		{
