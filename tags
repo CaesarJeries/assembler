@@ -1,0 +1,353 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ADDR_METHOD_LEN	assembler.c	26;"	d	file:
+ADDR_METHOD_NUM	command.h	4;"	d
+ARRAY_SIZE	command.c	9;"	d	file:
+ASSEMBLER_FILE_OPEN_ERR	assembler.h	/^	ASSEMBLER_FILE_OPEN_ERR,$/;"	e	enum:__anon5
+ASSEMBLER_FILE_READ_ERR	assembler.h	/^	ASSEMBLER_FILE_READ_ERR,$/;"	e	enum:__anon5
+ASSEMBLER_INVALID_EXT	assembler.h	/^	ASSEMBLER_INVALID_EXT,$/;"	e	enum:__anon5
+ASSEMBLER_MEM_ERR	assembler.h	/^	ASSEMBLER_MEM_ERR,$/;"	e	enum:__anon5
+ASSEMBLER_MISSING_SYM	assembler.h	/^	ASSEMBLER_MISSING_SYM$/;"	e	enum:__anon5
+ASSEMBLER_PARSE_ERR	assembler.h	/^	ASSEMBLER_PARSE_ERR,$/;"	e	enum:__anon5
+ASSEMBLER_SUCCESS	assembler.h	/^	ASSEMBLER_SUCCESS,$/;"	e	enum:__anon5
+A_OFFSET	command.h	/^	A_OFFSET = 21,$/;"	e	enum:__anon8
+AddressingMethod	command.h	/^} AddressingMethod;$/;"	t	typeref:enum:__anon7
+Assembler	assembler.h	/^typedef struct assembler Assembler;$/;"	t	typeref:struct:assembler
+AssemblerStatus	assembler.h	/^} AssemblerStatus;$/;"	t	typeref:enum:__anon5
+Bucket	hash_map.c	/^} Bucket;$/;"	t	typeref:struct:bucket	file:
+CC	Makefile	/^CC=gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-Wall -ansi -pedantic -std=c99 -DNDEBUG$/;"	m
+CODE_SEGMENT_START_ADDR	assembler.c	18;"	d	file:
+CODE_SYMBOL	assembler.c	/^	CODE_SYMBOL = 'c',$/;"	e	enum:__anon2	file:
+Command	command.h	/^} Command;$/;"	t	typeref:struct:__anon6
+DATA_SEGMENT_START_ADDR	assembler.c	19;"	d	file:
+DATA_SYMBOL	assembler.c	/^	DATA_SYMBOL = 'd',$/;"	e	enum:__anon2	file:
+DEFAULT_LOAD_FACTOR	hash_map.c	/^static const float DEFAULT_LOAD_FACTOR = 0.75;$/;"	v	file:
+DEPS	Makefile	/^DEPS=$(OBJECTS:%.o=%.d)$/;"	m
+DIRECT_ADDRESSING	command.h	/^	DIRECT_ADDRESSING = 1,$/;"	e	enum:__anon7
+DST_ADDR_OFFSET	command.h	/^	DST_ADDR_OFFSET = 11,$/;"	e	enum:__anon8
+DST_REG_OFFSET	command.h	/^	DST_REG_OFFSET = 13,$/;"	e	enum:__anon8
+ENTRY_SYMBOL	assembler.c	/^	ENTRY_SYMBOL = 'm'$/;"	e	enum:__anon2	file:
+EXT_SYMBOL	assembler.c	/^	EXT_SYMBOL = 'e',$/;"	e	enum:__anon2	file:
+E_OFFSET	command.h	/^	E_OFFSET = 23$/;"	e	enum:__anon8
+Entry	hash_map.c	/^} Entry;$/;"	t	typeref:struct:bucket_entry	file:
+ExtEntry	assembler.c	/^} ExtEntry;$/;"	t	typeref:struct:__anon4	file:
+FILES	test/Makefile	/^FILES=$(wildcard *.h)$/;"	m
+FILES_ABS	test/Makefile	/^FILES_ABS=$(abspath $(FILES))$/;"	m
+FILE_READER_EOF	file_reader.h	/^	FILE_READER_EOF,$/;"	e	enum:__anon9
+FILE_READER_ERROR	file_reader.h	/^	FILE_READER_ERROR$/;"	e	enum:__anon9
+FILE_READER_SUCCESS	file_reader.h	/^	FILE_READER_SUCCESS,$/;"	e	enum:__anon9
+FUNCT_LEN	assembler.c	24;"	d	file:
+FUNCT_OFFSET	command.h	/^	FUNCT_OFFSET = 16,$/;"	e	enum:__anon8
+FileReader	file_reader.h	/^typedef struct file_reader FileReader;$/;"	t	typeref:struct:file_reader
+FileReaderStatus	file_reader.h	/^} FileReaderStatus;$/;"	t	typeref:enum:__anon9
+HASH_MAP_MEM_ERROR	hash_map.h	/^	HASH_MAP_MEM_ERROR$/;"	e	enum:__anon11
+HASH_MAP_SUCCESS	hash_map.h	/^	HASH_MAP_SUCCESS,$/;"	e	enum:__anon11
+HELPER	logging.h	6;"	d
+HashMap	hash_map.h	/^typedef struct hash_map HashMap;$/;"	t	typeref:struct:hash_map
+HashMapEntryHandlers	hash_map.h	/^} HashMapEntryHandlers;$/;"	t	typeref:struct:__anon10
+HashMapStatus	hash_map.h	/^} HashMapStatus;$/;"	t	typeref:enum:__anon11
+IMMEDIATE_ADDRESSING	command.h	/^	IMMEDIATE_ADDRESSING = 0,$/;"	e	enum:__anon7
+INCLUDE_DIR	Makefile	/^INCLUDE_DIR=.\\$/;"	m
+INCLUDE_DIR	test/Makefile	/^INCLUDE_DIR=$(TOP)\/include\/$/;"	m
+InstructionEntry	assembler.c	/^} InstructionEntry;$/;"	t	typeref:struct:__anon3	file:
+LINKED_LIST_ELEM_NOT_FOUND	linked_list.h	/^	LINKED_LIST_ELEM_NOT_FOUND$/;"	e	enum:__anon12
+LINKED_LIST_MEM_ERROR	linked_list.h	/^	LINKED_LIST_MEM_ERROR,$/;"	e	enum:__anon12
+LINKED_LIST_SUCCESS	linked_list.h	/^	LINKED_LIST_SUCCESS,$/;"	e	enum:__anon12
+LinkedList	linked_list.h	/^typedef struct linked_list LinkedList;$/;"	t	typeref:struct:linked_list
+LinkedListStatus	linked_list.h	/^} LinkedListStatus;$/;"	t	typeref:enum:__anon12
+ListEntry	linked_list.c	/^} ListEntry;$/;"	t	typeref:struct:list_entry	file:
+MAX_ADDRESS	limits.h	/^const int MAX_ADDRESS = 1lu << 21 - 1;$/;"	v
+MAX_CMD_SIZE	command.h	5;"	d
+MAX_DIGIT_COUNT	parser.c	14;"	d	file:
+MAX_FILENAME_LENGTH	assembler.c	20;"	d	file:
+MAX_LABEL_LENGTH	assembler.c	21;"	d	file:
+MAX_LABEL_SIZE	limits.h	/^const int MAX_LABEL_SIZE = 31;$/;"	v
+MAX_LINE_SIZE	file_reader.h	7;"	d
+MAX_OP_SIZE	command.h	6;"	d
+OBJECTS	Makefile	/^OBJECTS=$(foreach x, $(basename $(SOURCES)), $(x).o)$/;"	m
+OP_CODE_LEN	assembler.c	23;"	d	file:
+OP_CODE_OFFSET	command.h	/^	OP_CODE_OFFSET = 0,$/;"	e	enum:__anon8
+Offsets	command.h	/^} Offsets;$/;"	t	typeref:enum:__anon8
+REGISTER_ADDRESSING	command.h	/^	REGISTER_ADDRESSING = 3$/;"	e	enum:__anon7
+REG_NUM_LEN	assembler.c	25;"	d	file:
+RELATIVE_ADDRESSING	command.h	/^	RELATIVE_ADDRESSING = 2,$/;"	e	enum:__anon7
+RUN_TEST	test/test_utils.h	16;"	d
+R_OFFSET	command.h	/^	R_OFFSET = 22,$/;"	e	enum:__anon8
+SOURCES	Makefile	/^SOURCES=$(shell find $(TOP) -type f -iname '*.c' | grep -v test | grep -v main.c)$/;"	m
+SRC_ADDR_OFFSET	command.h	/^	SRC_ADDR_OFFSET = 6,$/;"	e	enum:__anon8
+SRC_REG_OFFSET	command.h	/^	SRC_REG_OFFSET = 8,$/;"	e	enum:__anon8
+Symbol	assembler.c	/^} Symbol;$/;"	t	typeref:struct:__anon1	file:
+SymbolType	assembler.c	/^} SymbolType;$/;"	t	typeref:enum:__anon2	file:
+TARGET	Makefile	/^TARGET=assembler$/;"	m
+TEST_BASENAMES	Makefile	/^TEST_BASENAMES=$(foreach x, $(basename $(TEST_SOURCES)), $(x))$/;"	m
+TEST_LOGFILE	Makefile	/^TEST_LOGFILE=tests.log$/;"	m
+TEST_SOURCES	Makefile	/^TEST_SOURCES=$(shell find $(TOP) -type f -iname '*_test.c')$/;"	m
+TOP	Makefile	/^TOP=$(abspath .)$/;"	m
+TOP	test/Makefile	/^TOP=~\/projects\/assembler$/;"	m
+VA_ARGS	logging.h	7;"	d
+WORD_SIZE	common.h	4;"	d
+__ASSEMBLER_H__	assembler.h	2;"	d
+__COMMAND_H__	command.h	2;"	d
+__COMMON_H__	common.h	2;"	d
+__FILE_READER_H__	file_reader.h	2;"	d
+__GRAMMAR_H__	grammar.h	2;"	d
+__HASH_MAP_H__	hash_map.h	2;"	d
+__LIMITS_H__	limits.h	2;"	d
+__LINKED_LIST_H__	linked_list.h	2;"	d
+__LOGGING_H__	logging.h	2;"	d
+__MY_STRING_H__	string.h	2;"	d
+__PARSER_H__	parser.h	2;"	d
+__TEST_UTILS_H__	test/test_utils.h	2;"	d
+_debug	logging.h	11;"	d
+addLast	hash_map.c	/^static void addLast(Bucket* bucket, Entry* new_entry)$/;"	f	file:
+addLast	linked_list.c	/^static void addLast(LinkedList* list, ListEntry* entry)$/;"	f	file:
+add_data_symbol	assembler.c	/^static int add_data_symbol(Assembler* assembler, const char* label)$/;"	f	file:
+add_ext_symbol	assembler.c	/^static int add_ext_symbol(Assembler* assembler, const char* label)$/;"	f	file:
+add_inst_symbol	assembler.c	/^static int add_inst_symbol(Assembler* assembler, const char* label)$/;"	f	file:
+add_symbol	assembler.c	/^static int add_symbol(Assembler* assembler, const char* label, size_t value, SymbolType type)$/;"	f	file:
+additional_words	assembler.c	/^	size_t additional_words;$/;"	m	struct:__anon3	file:
+assembler	assembler.c	/^struct assembler$/;"	s	file:
+assemblerDestroy	assembler.c	/^void assemblerDestroy(Assembler* assembler)$/;"	f
+assemblerInit	assembler.c	/^Assembler* assemblerInit()$/;"	f
+assemblerProcess	assembler.c	/^AssemblerStatus assemblerProcess(Assembler* assembler, const char* filename)$/;"	f
+assemblerReset	assembler.c	/^void assemblerReset(Assembler* assembler)$/;"	f
+assert_int_eq	test/test_utils.h	10;"	d
+assert_not_null	test/test_utils.h	33;"	d
+assert_null	test/test_utils.h	26;"	d
+assert_str_eq	test/test_utils.h	41;"	d
+basename	file_reader.c	/^	const char* basename;$/;"	m	struct:file_reader	file:
+bin_to_int	string.c	/^int bin_to_int(const char* str)$/;"	f
+binary_code	assembler.c	/^	char* binary_code;$/;"	m	struct:__anon3	file:
+bitwise_not	string.c	/^static void bitwise_not(char* str)$/;"	f	file:
+bucket	hash_map.c	/^typedef struct bucket$/;"	s	file:
+bucketClear	hash_map.c	/^static void bucketClear(Bucket* bucket, HashMapEntryHandlers handlers)$/;"	f	file:
+bucketCreate	hash_map.c	/^Bucket* bucketCreate()$/;"	f
+bucketDestroy	hash_map.c	/^void bucketDestroy(Bucket* bucket, HashMapEntryHandlers handlers)$/;"	f
+bucketEntryCreate	hash_map.c	/^Entry* bucketEntryCreate()$/;"	f
+bucket_entry	hash_map.c	/^typedef struct bucket_entry$/;"	s	file:
+buckets	hash_map.c	/^	Bucket** buckets;$/;"	m	struct:hash_map	file:
+code_table	assembler.c	/^	HashMap* code_table;$/;"	m	struct:assembler	file:
+commands	command.c	/^static Command commands[] = {$/;"	v	file:
+compare_int	hash_map_test.c	/^int compare_int(void* a, void* b)$/;"	f
+complement	string.c	/^static void complement(char* str)$/;"	f	file:
+copy_int	hash_map_test.c	/^void* copy_int(void* n)$/;"	f
+createBucketArray	hash_map.c	/^static Bucket** createBucketArray(size_t size, HashMapStatus* status)$/;"	f	file:
+curr_line	file_reader.c	/^	size_t curr_line;$/;"	m	struct:file_reader	file:
+data	linked_list.c	/^	void* data;$/;"	m	struct:list_entry	file:
+data_counter	assembler.c	/^	size_t data_counter;$/;"	m	struct:assembler	file:
+data_table	assembler.c	/^	HashMap* data_table;	$/;"	m	struct:assembler	file:
+debug	logging.h	15;"	d
+debug	logging.h	19;"	d
+destroyBucketArray	hash_map.c	/^static void destroyBucketArray(Bucket** buckets,$/;"	f	file:
+dst_valid_addressing	command.h	/^	int dst_valid_addressing[ADDR_METHOD_NUM];$/;"	m	struct:__anon6
+dummy	hash_map.c	/^	Entry* dummy;$/;"	m	struct:bucket	file:
+dummy	linked_list.c	/^	ListEntry* dummy;$/;"	m	struct:linked_list	file:
+ent_list	assembler.c	/^	LinkedList* ent_list;$/;"	m	struct:assembler	file:
+entryCreate	linked_list.c	/^static ListEntry* entryCreate()$/;"	f	file:
+entryDestroy	linked_list.c	/^static void entryDestroy(ListEntry* entry)$/;"	f	file:
+entryFind	linked_list.c	/^static ListEntry* entryFind(LinkedList* list, void* data)$/;"	f	file:
+error	logging.h	9;"	d
+error_command	command.c	/^static Command error_command = {-1};$/;"	v	file:
+ext_entry_cmp	assembler.c	/^static int ext_entry_cmp(const void* e1, const void* e2)$/;"	f	file:
+ext_entry_copy	assembler.c	/^static void* ext_entry_copy(const void* other)$/;"	f	file:
+ext_entry_free	assembler.c	/^static void ext_entry_free(void* e)$/;"	f	file:
+ext_list	assembler.c	/^	LinkedList* ext_list;$/;"	m	struct:assembler	file:
+fileReaderDestroy	file_reader.c	/^void fileReaderDestroy(FileReader* fr)$/;"	f
+fileReaderGetBasename	file_reader.c	/^const char* fileReaderGetBasename(const FileReader* fr)$/;"	f
+fileReaderGetFilename	file_reader.c	/^const char* fileReaderGetFilename(const FileReader* fr)$/;"	f
+fileReaderGetLine	file_reader.c	/^FileReaderStatus fileReaderGetLine(FileReader* fr, char* dst)$/;"	f
+fileReaderGetLineNum	file_reader.c	/^size_t fileReaderGetLineNum(const FileReader* fr)$/;"	f
+fileReaderInit	file_reader.c	/^FileReader* fileReaderInit(const char* filename)$/;"	f
+fileReaderRewind	file_reader.c	/^void fileReaderRewind(FileReader* fr)$/;"	f
+file_ptr	file_reader.c	/^	FILE* file_ptr;$/;"	m	struct:file_reader	file:
+file_reader	file_reader.c	/^struct file_reader$/;"	s	file:
+filename	file_reader.c	/^	const char* filename;$/;"	m	struct:file_reader	file:
+findBucketEntry	hash_map.c	/^static Entry* findBucketEntry(Bucket* bucket, const void* key, key_cmp_func_t key_cmp_func)$/;"	f	file:
+firstPass	assembler.c	/^static int firstPass(Assembler* assembler, FileReader* fr)$/;"	f	file:
+for_each_func_t	hash_map.h	/^typedef void (*for_each_func_t) (void* data, void* params);$/;"	t
+free_int	hash_map_test.c	/^void free_int(void* value)$/;"	f
+funct	command.h	/^	int funct;$/;"	m	struct:__anon6
+get_additional_words	assembler.c	/^static LinkedList* get_additional_words(Assembler* assembler,$/;"	f	file:
+get_addr_method	command.c	/^AddressingMethod get_addr_method(const char* operand)$/;"	f
+get_base_name	file_reader.c	/^static char* get_base_name(const char* filename)$/;"	f	file:
+get_command_definition	command.c	/^Command get_command_definition(const char* command_name)$/;"	f
+get_command_obj	assembler.c	/^static char* get_command_obj(const char* command_name,$/;"	f	file:
+get_empty_word	assembler.c	/^static char* get_empty_word(void)$/;"	f	file:
+get_extension_index	file_reader.c	/^static int get_extension_index(const char* filename)$/;"	f	file:
+get_label	command.c	/^char* get_label(const char* operand)$/;"	f
+get_label_from_directive	assembler.c	/^static char* get_label_from_directive(const char* line)$/;"	f	file:
+get_operand_num	command.c	/^int get_operand_num(const char* command)$/;"	f
+get_register_number	command.c	/^int get_register_number(const char* operand)$/;"	f
+get_value	command.c	/^int get_value(const char* operand)$/;"	f
+get_value	string.c	/^static int get_value(const char* a)$/;"	f	file:
+handlers	hash_map.c	/^	HashMapEntryHandlers handlers;$/;"	m	struct:hash_map	file:
+handlers	hash_map_test.c	/^HashMapEntryHandlers handlers = {copy_int, free_int, copy_int, free_int};$/;"	v
+has_dst	command.h	/^	int has_dst;$/;"	m	struct:__anon6
+has_src	command.h	/^	int has_src;$/;"	m	struct:__anon6
+hashMapClear	hash_map.c	/^void hashMapClear(HashMap* map)$/;"	f
+hashMapDestroy	hash_map.c	/^void hashMapDestroy(HashMap* map)$/;"	f
+hashMapForEach	hash_map.c	/^void hashMapForEach(HashMap* map, for_each_func_t func, void* params)$/;"	f
+hashMapGet	hash_map.c	/^void* hashMapGet(HashMap* map, const void* key)$/;"	f
+hashMapInit	hash_map.c	/^HashMap* hashMapInit(key_hash_func_t key_hash_func,$/;"	f
+hashMapInsert	hash_map.c	/^HashMapStatus hashMapInsert(HashMap* map, const void* key, const void* value)$/;"	f
+hashMapRemove	hash_map.c	/^void hashMapRemove(HashMap* map, const void* key)$/;"	f
+hashMapSize	hash_map.c	/^size_t hashMapSize(const HashMap* map)$/;"	f
+hash_int	hash_map_test.c	/^size_t hash_int(void* value, size_t size)$/;"	f
+hash_map	hash_map.c	/^struct hash_map$/;"	s	file:
+ic	assembler.c	/^	size_t ic;$/;"	m	struct:__anon3	file:
+inst_counter	assembler.c	/^	size_t inst_counter;$/;"	m	struct:assembler	file:
+inst_entry_copy	assembler.c	/^static void* inst_entry_copy(const void* other)$/;"	f	file:
+inst_entry_free	assembler.c	/^static void inst_entry_free(void* p)$/;"	f	file:
+inst_entry_print	assembler.c	/^static void inst_entry_print(const void* param)$/;"	f	file:
+int_cmp	assembler.c	/^static int int_cmp(const void* a, const void* b)$/;"	f	file:
+int_copy	assembler.c	/^static void* int_copy(const void* n)$/;"	f	file:
+int_free	assembler.c	/^static void int_free(void* n)$/;"	f	file:
+int_hash	assembler.c	/^static size_t int_hash(const void* n, size_t size)$/;"	f	file:
+int_to_bin	string.c	/^void int_to_bin(int n, char* dst)$/;"	f
+is_addressing_valid	command.c	/^static int is_addressing_valid(Command cmd,$/;"	f	file:
+is_command	command.c	/^int is_command(const char* label)$/;"	f
+is_command_valid	command.c	/^static int is_command_valid(const char* command_name,$/;"	f	file:
+is_comment	grammar.c	/^int is_comment(const char* expr)$/;"	f
+is_data	grammar.c	/^int is_data(const char* expr)$/;"	f
+is_entry	grammar.c	/^int is_entry(const char* expr)$/;"	f
+is_extern	grammar.c	/^int is_extern(const char* expr)$/;"	f
+is_keyword	grammar.c	/^int is_keyword(const char* label)$/;"	f
+is_register	command.c	/^int is_register(const char* op)$/;"	f
+is_str	assembler.c	/^static int is_str(const char* value_str)$/;"	f	file:
+is_string	grammar.c	/^int is_string(const char* expr)$/;"	f
+is_valid_extension	assembler.c	/^static int is_valid_extension(const char* filename)$/;"	f	file:
+is_whitespace	grammar.c	/^int is_whitespace(const char* expr)$/;"	f
+itoa	string.c	/^void itoa(char* dst, int orig)$/;"	f
+key	hash_map.c	/^	void* key;$/;"	m	struct:bucket_entry	file:
+key_cmp_func	hash_map.c	/^	key_cmp_func_t key_cmp_func;$/;"	m	struct:hash_map	file:
+key_cmp_func_t	hash_map.h	/^typedef int (*key_cmp_func_t)(const void*, const void*);$/;"	t
+key_copy	hash_map.h	/^	key_copy_func_t key_copy;$/;"	m	struct:__anon10
+key_copy_func_t	hash_map.h	/^typedef void* (*key_copy_func_t)(const void*);$/;"	t
+key_free	hash_map.h	/^	key_free_func_t key_free;$/;"	m	struct:__anon10
+key_free_func_t	hash_map.h	/^typedef void (*key_free_func_t)(void*);$/;"	t
+key_hash_func	hash_map.c	/^	key_hash_func_t key_hash_func;$/;"	m	struct:hash_map	file:
+key_hash_func_t	hash_map.h	/^typedef size_t (*key_hash_func_t)(const void*, size_t size);$/;"	t
+label	assembler.c	/^	char* label;$/;"	m	struct:__anon3	file:
+label	assembler.c	/^	char* label;$/;"	m	struct:__anon4	file:
+line_parser_t	assembler.c	/^typedef int (*line_parser_t)(Assembler*, FileReader*, const char*);$/;"	t	file:
+link	linked_list.c	/^static void link(ListEntry* first, ListEntry* second)$/;"	f	file:
+linkedListClear	linked_list.c	/^void linkedListClear(LinkedList* list)$/;"	f
+linkedListContains	linked_list.c	/^void* linkedListContains(const LinkedList* list, void* data)$/;"	f
+linkedListCopy	linked_list.c	/^LinkedList* linkedListCopy(const LinkedList* other)$/;"	f
+linkedListDestroy	linked_list.c	/^void linkedListDestroy(LinkedList* list)$/;"	f
+linkedListGetAt	linked_list.c	/^void* linkedListGetAt(LinkedList* list, size_t index)$/;"	f
+linkedListInit	linked_list.c	/^LinkedList* linkedListInit(list_value_copy_func_t value_copy_func,$/;"	f
+linkedListInsert	linked_list.c	/^LinkedListStatus linkedListInsert(LinkedList* list, void* data)$/;"	f
+linkedListRemove	linked_list.c	/^LinkedListStatus linkedListRemove(LinkedList* list, void* data)$/;"	f
+linkedListSize	linked_list.c	/^size_t linkedListSize(const LinkedList* list)$/;"	f
+linked_list	linked_list.c	/^struct linked_list$/;"	s	file:
+list_copy	assembler.c	/^static void* list_copy(const void* list)$/;"	f	file:
+list_entry	linked_list.c	/^typedef struct list_entry$/;"	s	file:
+list_free	assembler.c	/^static void list_free(void* list)$/;"	f	file:
+list_value_cmp_func_t	linked_list.h	/^typedef int (*list_value_cmp_func_t)(const void*, const void*);$/;"	t
+list_value_copy_func_t	linked_list.h	/^typedef void* (*list_value_copy_func_t)(const void*);$/;"	t
+list_value_free_func_t	linked_list.h	/^typedef void (*list_value_free_func_t)(void*);$/;"	t
+load_factor	hash_map.c	/^	float load_factor;$/;"	m	struct:hash_map	file:
+location	assembler.c	/^	size_t location;$/;"	m	struct:__anon4	file:
+main	hash_map_test.c	/^int main()$/;"	f
+main	linked_list_test.c	/^int main()$/;"	f
+main	main.c	/^int main(int argc, const char **argv)$/;"	f
+main	parser_test.c	/^int main()$/;"	f
+main	string_test.c	/^int main()$/;"	f
+method	assembler.c	/^	AddressingMethod method;$/;"	m	struct:__anon3	file:
+name	command.h	/^	const char* name;$/;"	m	struct:__anon6
+next	hash_map.c	/^	struct bucket_entry* next;$/;"	m	struct:bucket_entry	typeref:struct:bucket_entry::bucket_entry	file:
+next	linked_list.c	/^	struct list_entry* next;$/;"	m	struct:list_entry	typeref:struct:list_entry::list_entry	file:
+num_buckets	hash_map.c	/^	size_t num_buckets;$/;"	m	struct:hash_map	file:
+num_digits	string.c	/^static int num_digits(int n)$/;"	f	file:
+num_elements	hash_map.c	/^       	size_t num_elements;	$/;"	m	struct:hash_map	file:
+op_code	command.h	/^	int op_code;$/;"	m	struct:__anon6
+operand_label_list	assembler.c	/^	LinkedList* operand_label_list;$/;"	m	struct:assembler	file:
+output_binary_file	assembler.c	/^static void output_binary_file(Assembler* assembler, const char* basename)$/;"	f	file:
+output_code_segment	assembler.c	/^static void output_code_segment(Assembler* assembler, FILE* file)$/;"	f	file:
+output_data_segment	assembler.c	/^static void output_data_segment(Assembler* assembler, FILE* file)$/;"	f	file:
+output_entry_file	assembler.c	/^static void output_entry_file(Assembler* assembler, const char* basename)$/;"	f	file:
+output_extern_file	assembler.c	/^static void output_extern_file(Assembler* assembler, const char* basename)$/;"	f	file:
+output_files	assembler.c	/^static void output_files(Assembler* assembler, const char* basename)$/;"	f	file:
+parse_command	command.c	/^int parse_command(const char* line,$/;"	f
+parse_command_unit	assembler.c	/^static int parse_command_unit(Assembler* assembler, const char* line, const char* label)$/;"	f	file:
+parse_data	parser.c	/^LinkedList* parse_data(const char* expr, char** error)$/;"	f
+parse_data_unit	assembler.c	/^static int parse_data_unit(Assembler* assembler, const char* line, const char* label)$/;"	f	file:
+parse_extern_unit	assembler.c	/^static int parse_extern_unit(Assembler* assembler, const char* line, const char* label)$/;"	f	file:
+parse_int	parser.c	/^int parse_int(const char* expr, char** error_msg)$/;"	f
+parse_line_first_pass	assembler.c	/^static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const char* line)$/;"	f	file:
+parse_line_second_pass	assembler.c	/^static int parse_line_second_pass(Assembler* assembler, FileReader* fr, const char* line)$/;"	f	file:
+parse_string	parser.c	/^char* parse_string(const char* expr, char** error)$/;"	f
+parse_string_unit	assembler.c	/^static int parse_string_unit(Assembler* assembler, const char* line, const char* label)$/;"	f	file:
+pass	assembler.c	/^static int pass(Assembler* assembler, FileReader* fr, line_parser_t parse_line)$/;"	f	file:
+prev	linked_list.c	/^	struct list_entry* prev;$/;"	m	struct:list_entry	typeref:struct:list_entry::list_entry	file:
+print_code	assembler.c	/^static void print_code(Assembler* assembler)$/;"	f	file:
+report_error	logging.h	10;"	d
+resizeHashMap	hash_map.c	/^static HashMapStatus resizeHashMap(HashMap* map)$/;"	f	file:
+resolve_filename	file_reader.c	/^static char* resolve_filename(const char* filename)$/;"	f	file:
+resolve_word	assembler.c	/^static char* resolve_word(Assembler* assembler, const char* operand)$/;"	f	file:
+reverse	string.c	/^static void reverse(char* str)$/;"	f	file:
+search_for_label	parser.c	/^const char* search_for_label(const char* line, char** label_dst)$/;"	f
+secondPass	assembler.c	/^static int secondPass(Assembler* assembler, FileReader* fr)$/;"	f	file:
+size	linked_list.c	/^	size_t size;$/;"	m	struct:linked_list	file:
+skip_directive	parser.c	/^const char* skip_directive(const char* expr)$/;"	f
+skip_whitespace	parser.c	/^const char* skip_whitespace(const char* expr)$/;"	f
+src_valid_addressing	command.h	/^	int src_valid_addressing[ADDR_METHOD_NUM];$/;"	m	struct:__anon6
+status	assembler.c	/^static AssemblerStatus status = ASSEMBLER_SUCCESS;$/;"	v	file:
+str_cmp	assembler.c	/^static int str_cmp(const void* s1, const void* s2)$/;"	f	file:
+str_compare	linked_list_test.c	/^int str_compare(void* s1, void* s2)$/;"	f
+str_compare	parser.c	/^static int str_compare(const void* s1, const void* s2)$/;"	f	file:
+str_copy	assembler.c	/^static void* str_copy(const void* s)$/;"	f	file:
+str_copy	linked_list_test.c	/^void* str_copy(void* s)$/;"	f
+str_copy	parser.c	/^static void* str_copy(const void* str)$/;"	f	file:
+str_free	assembler.c	/^static void str_free(void* s)$/;"	f	file:
+str_free	linked_list_test.c	/^void str_free(void* s)$/;"	f
+str_free	parser.c	/^static void str_free(void* s)$/;"	f	file:
+str_hash	assembler.c	/^static size_t str_hash(const void* ptr, size_t size)$/;"	f	file:
+str_to_int	parser.c	/^int str_to_int(const char* str_start, const char* str_end)$/;"	f
+strappend	string.c	/^char* strappend(const char* s1, const char* s2)$/;"	f
+strdup	string.c	/^char* strdup(const char* str)$/;"	f
+strndup	string.c	/^char* strndup(const char* str, size_t size)$/;"	f
+sym_table	assembler.c	/^	HashMap* sym_table;$/;"	m	struct:assembler	file:
+symbolCopy	assembler.c	/^static void* symbolCopy(const void* other)$/;"	f	file:
+symbolFree	assembler.c	/^static void symbolFree(void* s)$/;"	f	file:
+test_contains	linked_list_test.c	/^int test_contains()$/;"	f
+test_get	hash_map_test.c	/^int test_get()$/;"	f
+test_get_at	linked_list_test.c	/^int test_get_at()$/;"	f
+test_insert	hash_map_test.c	/^int test_insert()$/;"	f
+test_insert_resize	hash_map_test.c	/^int test_insert_resize()$/;"	f
+test_itoa	string_test.c	/^int test_itoa()$/;"	f
+test_parse_data	parser_test.c	/^int test_parse_data()$/;"	f
+test_parse_int_error_case	parser_test.c	/^int test_parse_int_error_case()$/;"	f
+test_parse_int_normal_case	parser_test.c	/^int test_parse_int_normal_case()$/;"	f
+test_parse_string_error_case	parser_test.c	/^int test_parse_string_error_case()$/;"	f
+test_parse_string_normal_case	parser_test.c	/^int test_parse_string_normal_case()$/;"	f
+test_remove	linked_list_test.c	/^int test_remove()$/;"	f
+test_sanity	hash_map_test.c	/^int test_sanity()$/;"	f
+test_sanity	linked_list_test.c	/^int test_sanity()$/;"	f
+test_size	hash_map_test.c	/^int test_size()$/;"	f
+test_size	linked_list_test.c	/^int test_size()$/;"	f
+test_strdup	string_test.c	/^int test_strdup()$/;"	f
+type	assembler.c	/^	char type;$/;"	m	struct:__anon1	file:
+unlink	linked_list.c	/^static void unlink(ListEntry* entry)$/;"	f	file:
+updateLoadFactor	hash_map.c	/^static void updateLoadFactor(HashMap* map)$/;"	f	file:
+update_code_table	assembler.c	/^static int update_code_table(Assembler* assembler)$/;"	f	file:
+update_data_address	assembler.c	/^static void update_data_address(void* data, void* params)$/;"	f	file:
+update_extern_list	assembler.c	/^static int update_extern_list(Assembler* assembler)$/;"	f	file:
+update_symbol_addresses	assembler.c	/^static void update_symbol_addresses(Assembler* assembler)$/;"	f	file:
+value	assembler.c	/^	size_t value;$/;"	m	struct:__anon1	file:
+value	hash_map.c	/^	void* value;$/;"	m	struct:bucket_entry	file:
+value_cmp_func	linked_list.c	/^	list_value_cmp_func_t value_cmp_func;$/;"	m	struct:linked_list	file:
+value_copy	hash_map.h	/^	value_copy_func_t value_copy;$/;"	m	struct:__anon10
+value_copy_func	linked_list.c	/^	list_value_copy_func_t value_copy_func;$/;"	m	struct:linked_list	file:
+value_copy_func_t	hash_map.h	/^typedef void* (*value_copy_func_t)(const void*);$/;"	t
+value_free	hash_map.h	/^	value_free_func_t value_free;$/;"	m	struct:__anon10
+value_free_func	linked_list.c	/^	list_value_free_func_t value_free_func;$/;"	m	struct:linked_list	file:
+value_free_func_t	hash_map.h	/^typedef void (*value_free_func_t)(void*);$/;"	t
+write_data_word	assembler.c	/^static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_t value)$/;"	f	file:
+write_value	assembler.c	/^static void write_value(char* dst, int value, size_t offset)$/;"	f	file:
