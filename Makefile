@@ -4,8 +4,12 @@ INCLUDE_DIR=.\
 	    test\
 	    $()
 
-CFLAGS=-Wall -ansi -pedantic -std=c99 -DNDEBUG
+CFLAGS = -Wall -ansi -pedantic -std=c99 
 CFLAGS += $(addprefix -iquote, $(INCLUDE_DIR))
+ifndef debug
+	CFLAGS += -DNDEBUG
+endif
+
 CC=gcc
 
 SOURCES=$(shell find $(TOP) -type f -iname '*.c' | grep -v test | grep -v main.c)
@@ -53,12 +57,13 @@ sub: clean
 .PHONY: all clean test run_test sub
 
 clean:
-	rm -f *.tar
-	rm -f test/end-to-end/*.ent
-	rm -f test/end-to-end/*.ext
-	rm -f test/end-to-end/*.ob
-	rm -f *.d
-	rm -f *_test
-	rm -f *.o
-	rm -f $(TARGET)
+	@rm -f *.tar
+	@rm -f test/end-to-end/*.ent
+	@rm -f test/end-to-end/*.ext
+	@rm -f test/end-to-end/*.ob
+	@rm -f *.d
+	@rm -f *_test
+	@rm -f *.o
+	@rm -f *.log
+	@rm -f $(TARGET)
 

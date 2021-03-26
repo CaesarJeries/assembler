@@ -132,12 +132,12 @@ static void inst_entry_print(const void* param)
 {
 	InstructionEntry* entry = param;
 
-	printf("Binary code: %s | Label: %s | IC: %lu | AW: %lu | Addr: %d | ARE: %c\n",
+	printf("Binary code: %s | Label: %s | IC: %lu | Additional words: %lu | Addr: %s | ARE: %c\n",
 		entry->binary_code,
 		entry->label,
 		entry->ic,
 		entry->additional_words,
-		entry->method,
+		get_addr_method_name(entry->method),
 		entry->are);
 }
 #endif
@@ -436,7 +436,7 @@ static char* get_command_obj(const char* command_name,
 		
 		if (cmd_def.has_dst)
 		{
-			write_value(result, get_addr_method(dst_op), WORD_SIZE - 1);
+			write_value(result, get_addr_method(dst_op), WORD_SIZE);
 		}
 	}
 	
@@ -453,10 +453,10 @@ static char* resolve_word(Assembler* assembler, const char* operand)
 	if (REGISTER_ADDRESSING == method)
 	{
 		int reg_num = get_register_number(operand);
-		debug("Addind an extra word for register: %d", reg_num);
+		debug("Adding an extra word for register: %d", reg_num);
 		
 		char* word = get_empty_word();
-		int bit_index = WORD_SIZE - reg_num;
+		int bit_index = WORD_SIZE - reg_num - 1;
 		word[bit_index] = '1';
 		debug("Binary representation: %s", word);
 
@@ -543,6 +543,7 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 	memset(src_op, 0, MAX_OP_SIZE);
 	memset(dst_op, 0, MAX_OP_SIZE);
 
+	// get command name, source/destination operands
 	if (0 != parse_command(line, cmd_name, src_op, dst_op))
 	{
 		error("Failed to parse instruction: %s", line);
@@ -566,6 +567,12 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 	size_t location = CODE_SEGMENT_START_ADDR + assembler->inst_counter;
 	
 	debug("Adding word to instruction table: %s. Label: %s", entry.binary_code, entry.label);
+
+	#ifndef NDEBUG
+	debug("Printing instruction entry:");
+	inst_entry_print(&entry);
+	#endif
+
 	hashMapInsert(assembler->code_table, &location, &entry);
 	++assembler->inst_counter;
 	free(command); command = NULL;
@@ -581,7 +588,7 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 			debug("Command takes a single operand: %s", cmd_name);
 			operand = dst_op;
 		}
-		else if (1lu == i || REGISTER_ADDRESSING == get_addr_method(src_op))
+		else if (1lu == i)
 		{
 			debug("Handling destination operand");
 			operand = dst_op;
@@ -596,8 +603,15 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 		entry.label = operand_label;
 		entry.ic = assembler->inst_counter;
 		entry.additional_words = 0;
+
 		location = CODE_SEGMENT_START_ADDR + assembler->inst_counter;
 		debug("Adding word to instruction table: %s. Label: %s. Location: %lu", word, entry.label, location);
+
+		#ifndef NDEBUG
+		debug("Printing instruction entry:");
+		inst_entry_print(&entry);
+		#endif
+
 		hashMapInsert(assembler->code_table, &location, &entry);
 		
 		++assembler->inst_counter;
@@ -717,11 +731,13 @@ static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const cha
 static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_t value)
 {
 	AddressingMethod method = entry->method;
-	
+
+	write_value(entry->binary_code, value, WORD_SIZE);
+
 	debug("Updating ARE flags");	
 	if (RELATIVE_ADDRESSING == method)
 	{
-		entry->are = 'A';
+		entry->are = 'R';
 	}
 	else if (DIRECT_ADDRESSING == method)
 	{
@@ -737,6 +753,8 @@ static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_
 		{
 			entry->are = 'R';
 		}
+	} else if (REGISTER_ADDRESSING == method) {
+		entry->are = 'A';
 	}
 }
 
@@ -951,7 +969,7 @@ static int is_str(const char* value_str)
 static void output_code_segment(Assembler* assembler, FILE* file)
 {
 	size_t code_size = assembler->inst_counter;
-	const unsigned int mask = 0xffffff;	
+	const unsigned int mask = 0xfff;	
 	for (size_t i = CODE_SEGMENT_START_ADDR;
 	     i < CODE_SEGMENT_START_ADDR + code_size;
 	     ++i)
@@ -960,8 +978,8 @@ static void output_code_segment(Assembler* assembler, FILE* file)
 		assert(entry);
 		int value = bin_to_int(entry->binary_code);
 		debug("Converted binary to int: %s %s, %d", entry->label, entry->binary_code, value);
-		debug("Writing %07lu %06x to file", i, mask & value);
-		fprintf(file, "%07lu %06x %c\n", i, mask & value, entry->are);
+		debug("Writing %04lu %03X %c to file", i, mask & value, entry->are);
+		fprintf(file, "%04lu %03X %c\n", i, mask & value, entry->are);
 	}
 }
 

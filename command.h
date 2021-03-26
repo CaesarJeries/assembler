@@ -39,6 +39,7 @@ typedef enum
 Command get_command_definition(const char* command_name);
 
 AddressingMethod get_addr_method(const char* operand);
+const char* get_addr_method_name(AddressingMethod method);
 int is_register(const char* operand);
 int get_register_number(const char* operand);
 int get_value(const char* operand);

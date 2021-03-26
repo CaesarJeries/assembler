@@ -96,14 +96,21 @@ int get_register_number(const char* operand)
 
 AddressingMethod get_addr_method(const char* operand)
 {
-	if ('#' == operand[0]) return IMMEDIATE_ADDRESSING;
-	if ('%' == operand[0]) return RELATIVE_ADDRESSING;
+	// Assume direct addressing by default
+	AddressingMethod method = DIRECT_ADDRESSING;
+	
+	if ('#' == operand[0]) method = IMMEDIATE_ADDRESSING;
+	else if ('%' == operand[0]) method = RELATIVE_ADDRESSING;
+	else if (is_register(operand)) method = REGISTER_ADDRESSING;
 
-	if (is_register(operand)) return REGISTER_ADDRESSING;
-
-	return DIRECT_ADDRESSING; // Assume direct addressing by default
+	debug("Addressing method for operand '%s': %s", operand, get_addr_method_name(method));
+	return method;
 }
 
+const char* get_addr_method_name(AddressingMethod method) {
+	static const char* names[ADDR_METHOD_NUM] = {"Immediate", "Direct", "Relative", "Register"};
+	return names[method];
+}
 
 static int is_addressing_valid(Command cmd,
 			       const char* src_op,
