@@ -6,11 +6,11 @@ LOOP:	prn #48
 	mov r3, K
 	sub r1, r4
 	bne END
-	bne &END
+	bne %END
 	dec W
 
 .entry MAIN
-	jmp &LOOP
+	jmp %LOOP
 	add L3, L3
 END:	stop
 

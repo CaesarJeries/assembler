@@ -12,7 +12,7 @@ LOOP:	prn #48
 	dec W
 
 .entry MAIN
-	jmp &LOOP
+	jmp %LOOP
 	add L3, L3
 END:	stop
 

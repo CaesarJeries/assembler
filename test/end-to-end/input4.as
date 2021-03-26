@@ -1,5 +1,5 @@
 ; test basic label handling
 
-bne &END
+bne %END
 END:	stop
 
