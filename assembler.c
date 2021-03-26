@@ -20,9 +20,8 @@
 #define MAX_FILENAME_LENGTH 128
 #define MAX_LABEL_LENGTH 128
 
-#define OP_CODE_LEN 6
-#define FUNCT_LEN 5
-#define REG_NUM_LEN 3
+#define OP_CODE_LEN 4
+#define FUNCT_LEN 4
 #define ADDR_METHOD_LEN 2
 
 static AssemblerStatus status = ASSEMBLER_SUCCESS;
@@ -69,6 +68,7 @@ typedef struct
 	size_t additional_words;
 	char* label;
 	AddressingMethod method;
+	char are;
 
 } InstructionEntry;
 
@@ -121,6 +121,7 @@ static void* inst_entry_copy(const void* other)
 		new_entry->ic = other_entry->ic;
 		new_entry->additional_words = other_entry->additional_words;
 		new_entry->method = other_entry->method;
+		new_entry->are = other_entry->are;
 	}
 
 	return new_entry;
@@ -131,12 +132,13 @@ static void inst_entry_print(const void* param)
 {
 	InstructionEntry* entry = param;
 
-	printf("Binary code: %s | Label: %s | IC: %lu | AW: %lu | Addr: %d\n",
+	printf("Binary code: %s | Label: %s | IC: %lu | AW: %lu | Addr: %d | ARE: %c\n",
 		entry->binary_code,
 		entry->label,
 		entry->ic,
 		entry->additional_words,
-		entry->method);
+		entry->method,
+		entry->are);
 }
 #endif
 
@@ -423,27 +425,18 @@ static char* get_command_obj(const char* command_name,
 		Command cmd_def = get_command_definition(command_name);
 
 		debug("Writing op code");
-		write_value(result, cmd_def.op_code, SRC_ADDR_OFFSET);
+		write_value(result, cmd_def.op_code, FUNCT_OFFSET);
 		debug("Writing funct");
-		write_value(result, cmd_def.funct, A_OFFSET);
-		result[A_OFFSET] = '1';
+		write_value(result, cmd_def.funct, SRC_ADDR_OFFSET);
 
 		if (cmd_def.has_src)
 		{
-			write_value(result, get_addr_method(src_op), SRC_REG_OFFSET);
-			if (is_register(src_op))
-			{
-				write_value(result, get_register_number(src_op), DST_ADDR_OFFSET);
-			}
+			write_value(result, get_addr_method(src_op), DST_ADDR_OFFSET);
 		}
 		
 		if (cmd_def.has_dst)
 		{
-			write_value(result, get_addr_method(dst_op), DST_REG_OFFSET);
-			if (is_register(dst_op))
-			{
-				write_value(result, get_register_number(dst_op), FUNCT_OFFSET);
-			}
+			write_value(result, get_addr_method(dst_op), WORD_SIZE - 1);
 		}
 	}
 	
@@ -459,8 +452,15 @@ static char* resolve_word(Assembler* assembler, const char* operand)
 
 	if (REGISTER_ADDRESSING == method)
 	{
-		debug("No additional words required");
-		return NULL;
+		int reg_num = get_register_number(operand);
+		debug("Addind an extra word for register: %d", reg_num);
+		
+		char* word = get_empty_word();
+		int bit_index = WORD_SIZE - reg_num;
+		word[bit_index] = '1';
+		debug("Binary representation: %s", word);
+
+		return word;
 	}
 	
 	char* word = get_empty_word();	
@@ -474,8 +474,7 @@ static char* resolve_word(Assembler* assembler, const char* operand)
 	if (IMMEDIATE_ADDRESSING == method)
 	{
 		int value = get_value(operand);
-		write_value(word, value, A_OFFSET);
-		word[A_OFFSET] = '1';
+		write_value(word, value, WORD_SIZE);
 	}
 	
 	return word;
@@ -563,6 +562,7 @@ static int parse_command_unit(Assembler* assembler, const char* line, const char
 	entry.binary_code = command;
 	entry.ic = assembler->inst_counter;
 	entry.additional_words = list_size;
+	entry.are = 'A';
 	size_t location = CODE_SEGMENT_START_ADDR + assembler->inst_counter;
 	
 	debug("Adding word to instruction table: %s. Label: %s", entry.binary_code, entry.label);
@@ -716,16 +716,12 @@ static int parse_line_first_pass(Assembler* assembler, FileReader* fr, const cha
 
 static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_t value)
 {
-	char* dst = entry->binary_code;
 	AddressingMethod method = entry->method;
 	
-	write_value(dst, value, A_OFFSET);
-	debug("Written value to data word: %s", dst);
-
 	debug("Updating ARE flags");	
 	if (RELATIVE_ADDRESSING == method)
 	{
-		dst[A_OFFSET] = '1';
+		entry->are = 'A';
 	}
 	else if (DIRECT_ADDRESSING == method)
 	{
@@ -735,11 +731,11 @@ static void write_data_word(Assembler* assembler, InstructionEntry* entry, size_
 		if (EXT_SYMBOL == symbol->type)
 		{
 			debug("Symbol %s is an external symbol", entry->label);
-			dst[E_OFFSET] = '1';
+			entry->are = 'E';
 		}
 		else
 		{
-			dst[R_OFFSET] = '1';
+			entry->are = 'R';
 		}
 	}
 }
@@ -965,7 +961,7 @@ static void output_code_segment(Assembler* assembler, FILE* file)
 		int value = bin_to_int(entry->binary_code);
 		debug("Converted binary to int: %s %s, %d", entry->label, entry->binary_code, value);
 		debug("Writing %07lu %06x to file", i, mask & value);
-		fprintf(file, "%07lu %06x\n", i, mask & value);
+		fprintf(file, "%07lu %06x %c\n", i, mask & value, entry->are);
 	}
 }
 

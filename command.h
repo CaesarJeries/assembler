@@ -1,9 +1,19 @@
 #ifndef __COMMAND_H__
 #define __COMMAND_H__
 
-#define ADDR_METHOD_NUM 4
 #define MAX_CMD_SIZE 128
 #define MAX_OP_SIZE 128
+
+
+typedef enum
+{
+	IMMEDIATE_ADDRESSING = 0,
+	DIRECT_ADDRESSING = 1,
+	RELATIVE_ADDRESSING = 2,
+	REGISTER_ADDRESSING = 3,
+	ADDR_METHOD_NUM // must be last
+
+} AddressingMethod;
 
 typedef struct
 {
@@ -19,25 +29,10 @@ typedef struct
 
 typedef enum
 {
-	IMMEDIATE_ADDRESSING = 0,
-	DIRECT_ADDRESSING = 1,
-	RELATIVE_ADDRESSING = 2,
-	REGISTER_ADDRESSING = 3
-
-} AddressingMethod;
-
-
-typedef enum
-{
 	OP_CODE_OFFSET = 0,
-	SRC_ADDR_OFFSET = 6,
-	SRC_REG_OFFSET = 8,
-	DST_ADDR_OFFSET = 11,
-	DST_REG_OFFSET = 13,
-	FUNCT_OFFSET = 16,
-	A_OFFSET = 21,
-	R_OFFSET = 22,
-	E_OFFSET = 23
+	FUNCT_OFFSET = 4,
+	SRC_ADDR_OFFSET = 8,
+	DST_ADDR_OFFSET = 10,
 
 } Offsets;
 

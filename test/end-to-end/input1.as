@@ -8,7 +8,7 @@ LOOP:	prn #48
 	sub r1, r4
 	bne END
 	cmp K, #-6
-	bne &END
+	bne %END
 	dec W
 
 .entry MAIN

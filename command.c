@@ -16,18 +16,18 @@ static Command error_command = {-1};
 static Command commands[] = {
 	{0, 0, "mov", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
 	{1, 0, "cmp", 1, 1, {1, 1, 0, 1}, {1, 1, 0, 1}},
-	{2, 1, "add", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
-	{2, 2, "sub", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
+	{2, 10, "add", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
+	{2, 11, "sub", 1, 1, {1, 1, 0, 1}, {0, 1, 0, 1}},
 
 	{4, 0, "lea", 1, 1, {0, 1, 0, 0}, {0, 1, 0, 1}},
 
-	{5, 1, "clr", 0, 1, {0}, {0, 1, 0, 1}},
-	{5, 2, "not", 0, 1, {0}, {0, 1, 0, 1}},
-	{5, 3, "inc", 0, 1, {0}, {0, 1, 0, 1}},
-	{5, 4, "dec", 0, 1, {0}, {0, 1, 0, 1}},
-	{9, 1, "jmp", 0, 1, {0}, {0, 1, 1, 0}},
-	{9, 2, "bne", 0, 1, {0}, {0, 1, 1, 0}},
-	{9, 3, "jsr", 0, 1, {0}, {0, 1, 1, 0}},
+	{5, 10, "clr", 0, 1, {0}, {0, 1, 0, 1}},
+	{5, 11, "not", 0, 1, {0}, {0, 1, 0, 1}},
+	{5, 12, "inc", 0, 1, {0}, {0, 1, 0, 1}},
+	{5, 13, "dec", 0, 1, {0}, {0, 1, 0, 1}},
+	{9, 10, "jmp", 0, 1, {0}, {0, 1, 1, 0}},
+	{9, 11, "bne", 0, 1, {0}, {0, 1, 1, 0}},
+	{9, 12, "jsr", 0, 1, {0}, {0, 1, 1, 0}},
 	{12, 0, "red", 0, 1, {0}, {0, 1, 0, 1}},
 	
 	{13, 0, "prn", 0, 1, {0}, {1, 1, 0, 1}},
@@ -97,7 +97,7 @@ int get_register_number(const char* operand)
 AddressingMethod get_addr_method(const char* operand)
 {
 	if ('#' == operand[0]) return IMMEDIATE_ADDRESSING;
-	if ('&' == operand[0]) return RELATIVE_ADDRESSING;
+	if ('%' == operand[0]) return RELATIVE_ADDRESSING;
 
 	if (is_register(operand)) return REGISTER_ADDRESSING;
 
